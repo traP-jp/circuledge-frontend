@@ -1,45 +1,158 @@
-# circuledge-frontend
+# 🚀 Circuledge
 
-This template should help get you started developing with Vue 3 in Vite.
+25春ハッカソン 16班 「Circuledge」 のフロントエンドリポジトリです。
 
-## Recommended IDE Setup
+わからないことがあれば、このドキュメントをまず読んでみてください。それでも解決しなければ、いつでも気軽に `@Pina641` (GitHub: Kaki256) に声をかけてください！
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## ✨ このプロジェクトで使っている技術
 
-## Type Support for `.vue` Imports in TS
+- Vue.js (v3): ユーザーが見る画面やボタンなど、UIを構築するためのメインの骨格です。
+- Vite: 開発用のサーバーを起動したり、最終的にコードを一つにまとめたりする高速なツールです。
+- TypeScript: JavaScriptに「型」という安全装置を追加したものです。コードの間違いを早期に発見し、バグを減らしてくれます。
+- Pinia: アプリ全体で共有したい情報（ログインしているユーザー情報や、表示中のノート一覧など）を管理するための道具箱です。
+- Vue Router: ページのURL（例えば、`/notes`, `/notes/:noteId/edit` など）と、表示するコンポーネントを紐付ける役割を担います。
+- ESLint & Prettier: 全員のコードの書き方を統一し、綺麗に保つためのものです。
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+---
 
-## Customize configuration
+## 🛠️ 開発を始めるための環境準備
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+まずは、自分のパソコンでこのプロジェクトを動かせるようにしましょう。以下の手順を上から順番に実行してください。
 
-## Project Setup
+### 0. 必要なツールをインストールする
 
-```sh
+もし、以下のツールが自分のPCに入っていない場合は、先にインストールしておきましょう。
+- [Node.js](https://nodejs.org/ja)
+- [Git](https://git-scm.com/downloads)
+- [Visual Studio Code (VS Code)](https://code.visualstudio.com/download)
+  - VS Codeの拡張機能: `Vue - Official` (Vueファイルの色付けなどをしてくれる) と `ESLint`, `Prettier - Code formatter` をインストールしておくと、開発がとても楽になります。
+
+### 1️⃣. リポジトリを自分のPCにコピーする (Clone)
+
+まず、このプロジェクトのコード一式を自分のPCにダウンロードしてきます。
+ターミナル（WindowsならPowerShellやGit Bash、Macならターミナル）を開いて、開発用ファイルを置きたいディレクトリに移動し、以下のコマンドを実行してください。
+
+```bash
+git clone https://github.com/traP-jp/circuledge-frontend.git
+```
+
+### 2️⃣. プロジェクトフォルダに移動する
+
+ダウンロードしたフォルダに移動します。
+
+```bash
+cd circuledge-frontend
+```
+
+### 3️⃣. 必要なライブラリをインストールする (Install)
+
+プロジェクトで使う道具（ライブラリ）を、自分のPCにインストールします。`package.json`というファイルに書かれたリストを元に、自動で全部インストールしてくれます。
+
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### 4️⃣. 開発用サーバーを起動する (Run)
 
-```sh
+下の開発用の起動コマンドを実行しましょう。
+
+```bash
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+成功すると、ターミナルに以下のようなメッセージが表示されます。
 
-```sh
-npm run build
+```
+  VITE v5.x.x  ready in xxx ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+### 5️⃣. ブラウザで確認する
 
-```sh
-npm run test:unit
+ブラウザ（Google Chromeなど）を開き、ターミナルに表示された `http://localhost:5173/` というアドレスにアクセスしてください。プロジェクトの画面が表示されれば、環境構築は成功です！🎉
+
+---
+
+## 🎨 開発の進め方 (Git Workflow)
+
+チームで開発する上で、コードがごちゃごちゃにならないように、決まった手順で作業を進めましょう。
+
+### STEP 1: 最新の状態に更新する
+
+作業を始める前に、必ずメインのブランチ（`main`）を最新の状態にします。
+
+```bash
+git switch main
+git pull origin main
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+### STEP 2: 自分の作業用ブランチを作成する
 
-```sh
-npm run lint
+`main`ブランチから、自分が作業するための「コピー」を作ります。このコピーを**ブランチ**と呼びます。
+ブランチ名は、**「何をするブランチか」** が分かりやすいように、以下のルールで作成しましょう。
+
+**ルール:** `feature/あなたの名前/機能名`, `fix/あなたの名前/修正内容`, ...
+
+以下のコマンドでブランチを作成し、そのブランチに移動します。
+
+```bash
+git switch -c feature/あなたの名前/機能名
 ```
+
+### STEP 3: コーディング
+
+VS Codeでコードを編集し、機能を追加したり、バグを修正したりします。
+ファイルを保存するたびに、Prettierが自動でコードを綺麗に整形してくれます。もしESLintがエラー（赤い波線）を出していたら、内容を確認し、修正しましょう。
+
+### STEP 4: 変更内容を記録する (Commit)
+
+作業がある程度キリの良いところまで進んだら、変更内容を記録（コミット）します。
+
+```bash
+# 1. 変更したファイルを全て記録の対象に追加する
+git add .
+
+# 2. 「どんな変更をしたか」というメッセージを付けて記録する
+git commit -m "feat: ノートカードのコンポーネントを作成"
+```
+
+コミットメッセージは、`feat:` (機能追加) や `fix:` (バグ修正) のように、接頭辞を付けると分かりやすいです。
+
+### STEP 5: リモートリポジトリに送信する (Push)
+
+自分のPCで記録した変更を、GitHub上のリポジトリに送信（プッシュ）します。
+
+```bash
+git push origin feature/あなたの名前/機能名
+```
+
+### STEP 6: プルリクエストを作成する (Pull Request)
+
+GitHubのサイトに行き、「Pull Request」を作成します。
+これは、「私の変更を、メインのブランチに取り込んでください！」 というお願いです。
+
+- タイトルと説明を分かりやすく書く。
+- 関連するGitHub Issueがあればリンクする。
+- レビュアーに `@Pina641` や `@yasako` を指定する。
+
+レビューでOKが出たら、リーダーがあなたのコードを`main`ブランチにマージします。これであなたの仕事は完了です！お疲れ様でした！
+
+---
+
+## 📜 覚えておくと便利なコマンド
+
+`package.json`に書かれている便利なコマンドです。
+
+- `npm run dev`: 開発サーバーを起動します。（一番よく使う）
+- `npm run build`: 最終的に本番環境にデプロイするための完成品ファイルを作成します。
+- `npm run preview`: `build`で作成した完成品を、ローカルで確認できます。
+- `npm run lint`: ESLintを実行して、コードに問題がないかチェックします。
+
+---
+
+## 連絡事項
+
+わからないこと、困ったことがあったら、一人で悩まずに、すぐにチームに相談してください。特に `@Pina641` はそのためにいます！
