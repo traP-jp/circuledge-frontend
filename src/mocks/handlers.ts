@@ -56,8 +56,8 @@ export const handlers = [
       channel: note.channel,
       permission: note.permission,
       body: note.body,
-      createdAt: new Date(note.createdAt).getTime(),
-      updatedAt: new Date(note.updatedAt).getTime(),
+      createdAt: new Date(note.createdAt * 1000).getTime(),
+      updatedAt: new Date(note.updatedAt * 1000).getTime(),
     };
     return HttpResponse.json(response);
   }),
