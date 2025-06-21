@@ -13,6 +13,7 @@
             :disabled="notesStore.loading"
           />
         </div>
+        <!-- 必要かどうか、後で検討する -->
         <!-- <div class="note-info">
           <label for="tags">tags</label>
           <input
@@ -106,17 +107,17 @@ const noteId = route.params.noteId as string;
 console.log(noteId);
 
 /**
- * ノートの本文（リアクティブ変数）
+ * ノートの本文
  */
 const noteBody = ref('');
 
 /**
- * ノートが紐づけられたチャンネル（リアクティブ変数）
+ * ノートが紐づけられたチャンネル
  */
 const noteChannel = ref('');
 
 /**
- * ノートに付与されたタグ（リアクティブ変数）
+ * ノートに付与されたタグ
  */
 const noteTags = ref('');
 
