@@ -9,6 +9,8 @@ export interface NoteSummary {
   title: string;
   summary: string;
   tag: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface NoteRevision {
@@ -16,6 +18,8 @@ export interface NoteRevision {
   channel: UUID;
   permission: Permission;
   body: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Channel {

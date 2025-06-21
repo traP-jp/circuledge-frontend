@@ -40,6 +40,8 @@ class MockDB {
       body: 'あのイーハトーヴォのすきとおった風、夏でも底に冷たさをもつ青いそら、うつくしい森で飾られたモリーオ市、郊外のぎらぎらひかる草の波。',
       summary: 'あのイーハトーヴォの...',
       tags: ['宮沢賢治'],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     const note2: DbNote = {
       id: '0197882d-208b-7c5a-bf60-89eafb904107',
@@ -50,6 +52,8 @@ class MockDB {
       body: 'APIのモックにはmswを使うと便利です。フロントエンドとバックエンドの並行開発がスムーズに進みます。',
       summary: 'mswを使ったAPIモック',
       tags: ['frontend', 'hackathon', 'development'],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     this.notes.set(note1.id, note1);
     this.notes.set(note2.id, note2);
@@ -64,7 +68,9 @@ class MockDB {
       permission: note.permission,
       title: note.title,
       summary: note.summary,
-      tag: note.tags.join(','), // `tag`はstring型なのでjoin
+      tag: note.tags.join(','),
+      updatedAt: note.updatedAt,
+      createdAt: note.createdAt,
     };
   }
 
@@ -138,6 +144,8 @@ class MockDB {
       body: '',
       summary: '',
       tags: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     this.notes.set(newId, newNote);
     return newNote;

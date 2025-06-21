@@ -57,6 +57,8 @@ export const handlers = [
       channel: note.channel,
       permission: note.permission,
       body: note.body,
+      createdAt: new Date(note.createdAt).toISOString(),
+      updatedAt: new Date(note.updatedAt).toISOString(),
     };
     return HttpResponse.json(response);
   }),
@@ -128,6 +130,8 @@ export const handlers = [
           channel: note.channel,
           permission: note.permission,
           body: note.body,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         },
       ],
     };
