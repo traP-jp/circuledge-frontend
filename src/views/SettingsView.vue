@@ -3,7 +3,7 @@
     <h1>設定</h1>
 
     <div class="setting-channel">
-      <p>デフォルトのチャンネル：</p>
+      <p>デフォルトのチャンネル：{{ user.defaultchannel}}</p>
       <input type="text" placeholder="チャンネルを検索" class="channel-search-box" />
       <div class="serch-channel"></div>
     </div>
@@ -18,6 +18,14 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+import { UserSettings } from '@/types/api';
+
+
+const user = ref<UserSettings>({
+  defaultchannel:''
+});
+
 
 </script>
 <style>
