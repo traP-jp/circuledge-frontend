@@ -4,28 +4,55 @@
     <div class="box">
       <p>チャンネル:</p>
       <input type="search" id="channel" name="search">
-      <button @click="channel()"><img src="../assets/search_mock.png" width="25px" line-height="25px" /></button>
+      <button @click="Channel()"><img src="../assets/search_mock.png" width="25px" line-height="25px" /></button>
       <input type="checkbox" checked>
       <p>子チャンネルを含む</p>
     </div>
     <div class="box">
       <p>キーワード:</p>
       <input type="search" id="keywords">
-      <button @click="keywords()"><img src="../assets/search_mock.png" width="25" line-height="25" /></button>
+      <button @click="Keywords()"><img src="../assets/search_mock.png" width="25" line-height="25" /></button>
     </div>
-    <button @click="setting()" id="setting">設定</button>
-    <button @click="newnote()" id="newnote">新規ノートを追加</button>
+    <button @click="Setting()" id="setting">設定</button>
+    <button @click="Newnote()" id="newnote">新規ノートを追加</button>
   </div><br>
 
   <div class="sort">
-    <button @click="datesort()" id="datesort">日時順でソート</button>
-    <button @click="titlesort()" id="titlesort">タイトル順でソート</button>
+    <button @click="Datesort()" id="datesort">日時順でソート</button>
+    <button @click="Titlesort()" id="titlesort">タイトル順でソート</button>
   </div>
 </template>
 
 <script setup lang="ts">
 
 
+const Channel = () => {
+  if (document.querySelector("#channel").value !== "") {
+    let channel = document.querySelector("#channel").value;
+    console.log(channel);
+  }
+
+}
+const Keywords = () => {
+  if (document.querySelector("#keywords").value !== "") {
+    let keywords = document.querySelector("#keywords").value;
+    console.log(keywords);
+  }
+}
+
+
+// ソート
+let datesort = true;
+let titlesort = true;
+let sort_order = "date"; // 初期は日付順
+const Datesort = () => {
+  datesort = !datesort; // 昇降順を切り替え
+  sort_order = "date"; //日付順に設定
+}
+const Titlesort = () => {
+  titlesort = !titlesort; // 昇降順を切り替え
+  sort_order = "title"; //タイトル順に設定
+}
 </script>
 
 <style>
