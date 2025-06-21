@@ -1,22 +1,26 @@
-import { createApp } from 'vue';
-import { createPinia } from 'pinia';
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+import { createPinia } from 'pinia'
 
-import App from './App.vue';
-import router from './router';
-
-// MSWを有効化する関数
 async function enableMocking() {
+  // Viteの環境変数を利用して、開発モード（development）のときのみモックを有効にします
   if (import.meta.env.MODE !== 'development') {
-    return;
+    return
   }
+
+  const { worker } = await import('./mocks/browser')
+
+  return worker.start({
+    onUnhandledRequest: 'bypass',
+  })
 }
 
-const app = createApp(App);
+const app = createApp(App)
 
-app.use(createPinia());
-app.use(router);
+app.use(createPinia())
+app.use(router)
 
-// アプリをマウントする前にMSWを有効化します。
 enableMocking().then(() => {
-  app.mount('#app');
-});
+  app.mount('#app')
+})
