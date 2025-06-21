@@ -3,7 +3,7 @@
     <h1>設定</h1>
 
     <div class="setting-channel">
-      <p>デフォルトのチャンネル：{{ user.defaultchannel }}</p>
+      <p>デフォルトのチャンネル：{{ user.defaultChannel }}</p>
       <div class="serch-inout-wrapper">
         <input type="text" id="channel" placeholder="チャンネルを検索" class="channel-search-box" />
         <button class="search-button"><img src="../assets/search-icon-image.png" width="25px" line-height="25px" /></button>
@@ -27,7 +27,7 @@ import type { UserSettings } from '@/types/api';
 
 
 const user = ref<UserSettings>({
-  defaultchannel: ''
+  defaultChannel: ''
 });
 
 

@@ -49,7 +49,9 @@ const note = ref<NoteSummary>({
   channel: '',
   tag: '',
   title: '',
-  summary: ''
+  summary: '',
+  createdAt: 0,
+  updatedAt: 0
 });
 
 
