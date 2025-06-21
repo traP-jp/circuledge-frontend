@@ -9,11 +9,20 @@
             name="channel"
             id="channel"
             placeholder="#event/hackathon/25spring/16"
+            v-model="noteChannel"
+            :disabled="notesStore.loading"
           />
         </div>
         <div class="note-info">
           <label for="tags">tags</label>
-          <input type="text" name="tags" id="tags" placeholder="tag1,tag2,tag3,tagtag" />
+          <input
+            type="text"
+            name="tags"
+            id="tags"
+            placeholder="tag1,tag2,tag3,tagtag"
+            v-model="noteTags"
+            :disabled="notesStore.loading"
+          />
         </div>
       </div>
       <div class="button-container">
@@ -103,13 +112,32 @@ const noteBody = computed(() => {
   return notesStore.currentNote?.body || '';
 });
 
+/**
+ * ノートが紐づけられたチャンネル
+ */
+const noteChannel = computed(() => {
+  return notesStore.currentNote?.channel || '';
+});
+
+/**
+ * ノートに付与されたタグ
+ */
+const noteTags = computed(() => {
+  // noteSummaryからタグを取得
+  const noteSummary = notesStore.notes.find((note) => note.id === noteId);
+  return noteSummary?.tag || '';
+});
+
 // コンポーネントがマウントされたら、ノートを取得する
 onMounted(async () => {
   if (noteId) {
-    await notesStore.fetchNoteById(noteId);
+    // ノート一覧とノート詳細の両方を取得
+    await Promise.all([notesStore.fetchNotes(), notesStore.fetchNoteById(noteId)]);
 
     // ちゃんと取得できているか確認
     console.log(noteBody.value);
+    console.log(noteChannel.value);
+    console.log(noteTags.value);
   }
 });
 </script>
@@ -124,10 +152,18 @@ input {
   outline: none;
   transition: border-color 0.2s;
   position: relative;
-  :focus {
-    border-color: #58b582;
-    background-color: #f6fff9;
-  }
+}
+
+input:focus {
+  border-color: #58b582;
+  background-color: #f6fff9;
+}
+
+input:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+  border-color: #e9ecef;
 }
 
 button {
