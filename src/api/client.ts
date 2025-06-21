@@ -1,6 +1,5 @@
 import type {
   UUID,
-  NotePermission,
   GetNotesRequestParams,
   GetNotesResponse,
   PostNoteResponse,
@@ -78,24 +77,12 @@ export async function getNotes(params: GetNotesRequestParams = {}): Promise<GetN
 }
 
 /**
- * `api.d.ts` で `PostNoteRequest` が定義されていないため、ここで定義します。
- * 新しいノートを作成するために必要な情報です。
- */
-export interface CreateNotePayload {
-  title: string;
-  body: string;
-  channel: UUID;
-  permission: NotePermission;
-}
-
-/**
  * 新しいノートを作成します。
  * POST /notes
  */
-export async function createNote(payload: CreateNotePayload): Promise<PostNoteResponse> {
+export async function createNote(): Promise<PostNoteResponse> {
   const response = await apiFetch('/notes', {
     method: 'POST',
-    body: JSON.stringify(payload),
   });
   if (!response.ok) throw new ApiError(response);
   return response.json();
