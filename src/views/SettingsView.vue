@@ -1,6 +1,7 @@
 <template>
-  <h1>設定</h1>
   <div class="settings-container">
+    <h1>設定</h1>
+
     <div class="setting-channel">
       <p>デフォルトのチャンネル：</p>
       <input type="text" placeholder="チャンネルを検索" class="channel-search-box" />
@@ -20,6 +21,17 @@
 
 </script>
 <style>
+h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.settings-container {
+  max-width: 800px;
+  margin: auto;
+
+}
 
 .setting-channel {
   margin-bottom: 20px;

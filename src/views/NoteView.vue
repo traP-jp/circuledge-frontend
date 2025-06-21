@@ -52,9 +52,10 @@ const note = ref<NoteSummary>({
 </script>
 
 <style scoped>
-.setting-view {
-  max-width: 800px;
+.note-view {
+  max-width: 1200px;
   margin: auto;
+
 }
 
 .header-controls {
