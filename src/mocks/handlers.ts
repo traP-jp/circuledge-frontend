@@ -15,7 +15,6 @@ import type {
   NotePermission,
 } from '../types/api.d.ts';
 
-// APIのベースURLを定義しておくと便利です
 const API_BASE_URL = '/api';
 
 export const handlers = [
@@ -57,8 +56,8 @@ export const handlers = [
       channel: note.channel,
       permission: note.permission,
       body: note.body,
-      createdAt: new Date(note.createdAt).toISOString(),
-      updatedAt: new Date(note.updatedAt).toISOString(),
+      createdAt: new Date(note.createdAt).getTime(),
+      updatedAt: new Date(note.updatedAt).getTime(),
     };
     return HttpResponse.json(response);
   }),
@@ -130,8 +129,8 @@ export const handlers = [
           channel: note.channel,
           permission: note.permission,
           body: note.body,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
         },
       ],
     };
