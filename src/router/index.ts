@@ -1,5 +1,9 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import NoteListView from '../views/NoteListView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import NoteListView from '../views/NoteListView.vue';
+import NoteEditView from '../views/NoteEditView.vue';
+import NoteView from '../views/NoteView.vue';
+import NoteConflictView from '../views/NoteConflictView.vue';
+import SettingsView from '../views/SettingsView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,34 +11,34 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      redirect: '/notes'
+      redirect: '/notes',
     },
     {
       path: '/notes',
       name: 'note-list',
-      component: NoteListView
+      component: NoteListView,
     },
     {
       path: '/notes/:noteId/edit',
       name: 'note-edit',
-      component: () => import('../views/NoteEditView.vue')
+      component: NoteEditView,
     },
     {
       path: '/notes/:noteId/view',
       name: 'note-view',
-      component: () => import('../views/NoteView.vue')
+      component: NoteView,
     },
     {
       path: '/notes/:noteId/conflict',
       name: 'note-conflict',
-      component: () => import('../views/NoteConflictView.vue')
+      component: NoteConflictView,
     },
     {
       path: '/settings',
       name: 'settings',
-      component: () => import('../views/SettingsView.vue')
-    }
-  ]
-})
+      component: SettingsView,
+    },
+  ],
+});
 
-export default router
+export default router;

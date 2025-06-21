@@ -9,13 +9,17 @@ export interface NoteSummary {
   title: string;
   summary: string;
   tag: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface NoteRevision {
   revision: UUID;
   channel: UUID;
-  permission: Permission;
+  permission: NotePermission;
   body: string;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export interface Channel {
@@ -24,7 +28,7 @@ export interface Channel {
 }
 
 export interface UserSettings {
-  defaultchannel: UUID;
+  defaultChannel: UUID;
 }
 
 // GET /notes
@@ -45,7 +49,12 @@ export interface GetNotesResponse {
 }
 
 // POST /notes
-// export interface PostNoteRequest {}
+export interface PostNoteRequest {
+  title: string;
+  body: string;
+  channel: UUID;
+  permission: NotePermission;
+}
 
 export interface PostNoteResponse {
   id: UUID;

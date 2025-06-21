@@ -18,6 +18,8 @@ export const useNotesStore = defineStore('notes', () => {
       title: 'First Note',
       summary: 'This is the first note.',
       tag: 'tech',
+      createdAt: Date.now() - 100000,
+      updatedAt: Date.now() - 50000,
     },
     {
       id: 'uuid-2',
@@ -26,6 +28,8 @@ export const useNotesStore = defineStore('notes', () => {
       title: 'Second Note',
       summary: 'This is the second note.',
       tag: 'life',
+      createdAt: Date.now() - 200000,
+      updatedAt: Date.now() - 150000,
     },
   ];
 
@@ -34,6 +38,8 @@ export const useNotesStore = defineStore('notes', () => {
     channel: 'channel-1',
     permission: 'public',
     body: 'This is the full content of the first note.',
+    createdAt: Date.now() - 100000,
+    updatedAt: Date.now() - 50000,
   };
 
   async function fetchNotes() {
