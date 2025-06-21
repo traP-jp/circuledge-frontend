@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import NoteListView from '../views/NoteListView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,17 +7,34 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      redirect: '/notes'
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      path: '/notes',
+      name: 'note-list',
+      component: NoteListView
     },
-  ],
+    {
+      path: '/notes/:noteId/edit',
+      name: 'note-edit',
+      component: () => import('../views/NoteEditView.vue')
+    },
+    {
+      path: '/notes/:noteId/view',
+      name: 'note-view',
+      component: () => import('../views/NoteView.vue')
+    },
+    {
+      path: '/notes/:noteId/conflict',
+      name: 'note-conflict',
+      component: () => import('../views/NoteConflictView.vue')
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: () => import('../views/SettingsView.vue')
+    }
+  ]
 })
 
 export default router
