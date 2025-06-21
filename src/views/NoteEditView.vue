@@ -23,38 +23,15 @@
     </div>
     <div class="editor-container">
       <div class="editor-pane">
+        <div v-if="notesStore.loading" class="loading-overlay">
+          <div class="loading-message">読み込み中...</div>
+        </div>
         <div class="editor-content">
-          <textarea placeholder="Markdownで入力してください...">
-# Lorem ipsum
-
-dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-
-## サブヘッダー
-
-**太字のテキスト**と*斜体のテキスト*の例です。
-
-- リストアイテム1
-- リストアイテム2
-- リストアイテム3
-
-1. 番号付きリスト1
-2. 番号付きリスト2
-3. 番号付きリスト3
-
-`インラインコード`の例です。
-
-```javascript
-// コードブロックの例
-function hello() {
-  console.log("Hello, World!");
-}
-```
-
-> これは引用文です。
-> 複数行にわたって書くことができます。
-
-[リンクの例](https://example.com)</textarea
-          >
+          <textarea
+            placeholder="このノートは、Markdown 形式で入力できます。traQ のチャンネルと紐づけることで、ノートを簡単に管理できます。"
+            v-model="noteBody"
+            :disabled="notesStore.loading"
+          ></textarea>
         </div>
       </div>
       <div class="preview-pane">
@@ -103,7 +80,39 @@ function hello() {
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+// 必要なものをインポートする
+import { onMounted, computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { useNotesStore } from '@/stores/notes';
+
+const route = useRoute();
+const notesStore = useNotesStore();
+
+/**
+ * 編集ページのパス `/notes/:noteId/edit` にある `:noteId` を取得する
+ * 現時点では `uuid-1` と `uuid-2`
+ */
+const noteId = route.params.noteId as string;
+console.log(noteId);
+
+/**
+ * ノートの本文
+ */
+const noteBody = computed(() => {
+  return notesStore.currentNote?.body || '';
+});
+
+// コンポーネントがマウントされたら、ノートを取得する
+onMounted(async () => {
+  if (noteId) {
+    await notesStore.fetchNoteById(noteId);
+
+    // ちゃんと取得できているか確認
+    console.log(noteBody.value);
+  }
+});
+</script>
 
 <style scoped>
 input {
@@ -176,6 +185,29 @@ button {
   flex-direction: column;
   border: 2px solid #e0e0e0;
   overflow: hidden;
+  position: relative;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.loading-message {
+  padding: 1em 2em;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  color: #6c757d;
+  font-size: 14px;
 }
 
 .editor-content {
@@ -197,6 +229,12 @@ button {
   overflow-y: auto;
   padding-right: 1em;
   box-sizing: border-box;
+}
+
+.editor-content textarea:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
 }
 
 .preview-content {
