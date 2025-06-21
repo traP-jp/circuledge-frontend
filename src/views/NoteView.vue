@@ -2,8 +2,14 @@
   <div class="note-view">
     <div class="header-controls">
       <div class="note-info">
-        <div class="note-channel">channel:{{ note.channel }}</div>
-        <div class="note-tags">tags:{{ note.tag }}</div>
+        <div class="note-channel">
+          <span>channel:</span>
+          <span class="note-channel">{{ note.channel }}</span>
+        </div>
+        <div class="note-tag">
+          <span>tags: </span>
+          <span class="note-tag">{{ note.tag }}</span>
+        </div>
       </div>
       <div class="note-actions">
         <button class="note-action-button">ホームへ戻る</button>
@@ -14,22 +20,24 @@
     <div class="note-body">
       <p>{{ note.summary }}</p>
     </div>
-
+    <div class="note-body" v-html="renderedMarkdown"></div>
 
 
   </div>
 </template>
 
 <script setup lang="ts">
-import { NoteSummary } from '@/types/api';
+import type { NoteSummary } from '@/types/api';
 import { ref, computed } from 'vue';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 const renderedMarkdown = computed(() => {
   if (!note.value.summary) {
     return '';
   }
   // markedでMarkdownをHTMLに変換し、DOMPurifyでサニタイズする
-  const rawHtml = marked(note.value.summary);
+  const rawHtml = marked(note.value.summary) as string;
   return DOMPurify.sanitize(rawHtml);
 });
 
@@ -82,7 +90,7 @@ const note = ref<NoteSummary>({
   font-size: 16px;
 }
 
-.note-tags {
+.note-tag {
   font-size: 16px
 }
 
@@ -106,7 +114,8 @@ const note = ref<NoteSummary>({
 }
 
 .note-action-button:hover {
-  background-color: #5f8570;
-  border-color: #6edfa1;
+  background-color: #58b582;
+  color: white;
+  cursor: pointer;
 }
 </style>
