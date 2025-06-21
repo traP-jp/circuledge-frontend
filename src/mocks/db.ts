@@ -54,8 +54,8 @@ class MockDB {
       body: 'あのイーハトーヴォのすきとおった風、夏でも底に冷たさをもつ青いそら、うつくしい森で飾られたモリーオ市、郊外のぎらぎらひかる草の波。',
       summary: 'あのイーハトーヴォの...',
       tags: ['宮沢賢治'],
-      createdAt: 1750486800, // 2025-06-21T09:00:00Z
-      updatedAt: 1750486800, // 2025-06-21T09:00:00Z
+      createdAt: 1750486800000, // 2025-06-21T09:00:00Z
+      updatedAt: 1750486800000, // 2025-06-21T09:00:00Z
     };
     const note2: DbNote = {
       id: '0197882d-208b-7c5a-bf60-89eafb904107',
@@ -66,8 +66,8 @@ class MockDB {
       body: 'APIのモックにはmswを使うと便利です。フロントエンドとバックエンドの並行開発がスムーズに進みます。',
       summary: 'mswを使ったAPIモック',
       tags: ['frontend', 'hackathon', 'development'],
-      createdAt: 1750488600, // 2025-06-21T09:30:00Z
-      updatedAt: 1750488600, // 2025-06-21T09:30:00Z
+      createdAt: 1750488600000, // 2025-06-21T09:30:00Z
+      updatedAt: 1750488600000, // 2025-06-21T09:30:00Z
     };
     const note3: DbNote = {
       id: '0197882d-208b-7c5a-bf60-89eafb904108',
@@ -78,8 +78,8 @@ class MockDB {
       body: 'バックエンドの設計では、APIの設計とデータベースの正規化が重要です。特に、スケーラビリティを考慮した設計が求められます。',
       summary: 'バックエンドの設計ポイント',
       tags: ['backend', 'hackathon', 'development'],
-      createdAt: 1750490400, // 2025-06-21T10:00:00Z
-      updatedAt: 1750490400, // 2025-06-21T10:00:00Z
+      createdAt: 1750490400000, // 2025-06-21T10:00:00Z
+      updatedAt: 1750490400000, // 2025-06-21T10:00:00Z
     };
     const note4: DbNote = {
       id: '0197882d-208b-7c5a-bf60-89eafb904109', // IDを修正
@@ -90,8 +90,8 @@ class MockDB {
       body: 'Markdown は色々な事が出来ます。例えば、**太字**や*斜体*、[リンク](https://example.com)など。\nまた、コードブロックも使えます。\n```javascript\nconsole.log("Hello, World!");\n```\n',
       summary: 'Markdownの使い方',
       tags: ['markdown', 'development'],
-      createdAt: 1750494000, // 2025-06-21T11:00:00Z
-      updatedAt: 1750494000, // 2025-06-21T11:00:00Z
+      createdAt: 1750494000000, // 2025-06-21T11:00:00Z
+      updatedAt: 1750494000000, // 2025-06-21T11:00:00Z
     };
     this.notes.set(note1.id, note1);
     this.notes.set(note2.id, note2);

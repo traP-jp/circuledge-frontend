@@ -49,13 +49,6 @@ export interface GetNotesResponse {
 }
 
 // POST /notes
-export interface PostNoteRequest {
-  title: string;
-  body: string;
-  channel: UUID;
-  permission: NotePermission;
-}
-
 export interface PostNoteResponse {
   id: UUID;
   channel: UUID;

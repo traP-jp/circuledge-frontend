@@ -1,80 +1,135 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import type { NoteSummary, NoteRevision, UUID } from '@/types/api';
-// import { apiClient } from '@/api/client' // APIクライアントを想定
+import type {
+  NoteSummary,
+  NoteRevision,
+  UUID,
+  PutNoteRequest,
+  PutNoteConflictResponse,
+} from '@/types/api';
+import {
+  getNotes,
+  getNote,
+  createNote as apiCreateNote,
+  updateNote as apiUpdateNote,
+  ApiError,
+  ConflictError,
+} from '@/api/client';
+import { useRouter } from 'vue-router';
 
 export const useNotesStore = defineStore('notes', () => {
+  const router = useRouter();
+
+  // --- State ---
   const notes = ref<NoteSummary[]>([]);
   const currentNote = ref<NoteRevision | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  /** 編集競合が発生した際のサーバーからの情報 */
+  const conflict = ref<PutNoteConflictResponse | null>(null);
 
-  // モックデータを一時的に使用
-  const mockNotes: NoteSummary[] = [
-    {
-      id: 'uuid-1',
-      channel: 'channel-1',
-      permission: 'public',
-      title: 'First Note',
-      summary: 'This is the first note.',
-      tag: 'tech',
-      createdAt: Date.now() - 100000,
-      updatedAt: Date.now() - 50000,
-    },
-    {
-      id: 'uuid-2',
-      channel: 'channel-1',
-      permission: 'private',
-      title: 'Second Note',
-      summary: 'This is the second note.',
-      tag: 'life',
-      createdAt: Date.now() - 200000,
-      updatedAt: Date.now() - 150000,
-    },
-  ];
+  // --- Actions ---
 
-  const mockRevision: NoteRevision = {
-    revision: 'rev-uuid-1',
-    channel: 'channel-1',
-    permission: 'public',
-    body: 'This is the full content of the first note.',
-    createdAt: Date.now() - 100000,
-    updatedAt: Date.now() - 50000,
-  };
-
+  /**
+   * ノートのリストを取得します。
+   */
   async function fetchNotes() {
     loading.value = true;
     error.value = null;
     try {
-      // notes.value = (await apiClient.getNotes()).notes
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate API delay
-      notes.value = mockNotes;
+      const response = await getNotes();
+      notes.value = response.notes;
     } catch (e) {
-      error.value = (e as Error).message;
+      error.value = e instanceof Error ? e.message : 'An unknown error occurred';
+      console.error(e);
     } finally {
       loading.value = false;
     }
   }
 
-  async function fetchNoteById(id: UUID) {
+  /**
+   * IDを指定して単一のノートを取得します。
+   * @param id ノートのUUID
+   */
+  async function fetchNote(id: UUID) {
+    loading.value = true;
+    error.value = null;
+    currentNote.value = null;
+    try {
+      const note = await getNote(id);
+      currentNote.value = note;
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'An unknown error occurred';
+      console.error(e);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * 新しいノートを作成し、作成されたノートの編集画面に遷移します。
+   */
+  async function createNote() {
     loading.value = true;
     error.value = null;
     try {
-      // currentNote.value = await apiClient.getNote(id)
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate API delay
-      const noteSummary = mockNotes.find((n) => n.id === id);
-      if (noteSummary) {
-        currentNote.value = { ...mockRevision, body: `Full content for ${noteSummary.title}` };
-      } else {
-        currentNote.value = null;
-      }
+      const newNote = await apiCreateNote();
+      // 作成成功後、ノートリストを更新し、新しいノートのページに遷移する
+      await fetchNotes();
+      router.push({ name: 'note-editor', params: { id: newNote.id } });
     } catch (e) {
-      error.value = (e as Error).message;
-      currentNote.value = null;
+      error.value = e instanceof Error ? e.message : 'An unknown error occurred';
+      console.error(e);
     } finally {
       loading.value = false;
     }
   }
 
-  return { notes, currentNote, loading, error, fetchNotes, fetchNoteById };
+  /**
+   * ノートを保存（更新）します。
+   * @param noteId 更新するノートのID
+   * @param payload 更新内容
+   * @returns 成功した場合は `true`、失敗した場合は `false` を返す
+   */
+  async function saveNote(noteId: UUID, payload: PutNoteRequest): Promise<boolean> {
+    loading.value = true;
+    error.value = null;
+    conflict.value = null; // 前回の競合情報をクリア
+
+    try {
+      await apiUpdateNote(noteId, payload);
+      // 更新が成功したら、最新のノート情報を再取得する
+      await fetchNote(noteId);
+      // ノートリストのサマリーも更新されている可能性があるのでリストも更新
+      await fetchNotes();
+      return true;
+    } catch (e) {
+      if (e instanceof ConflictError) {
+        // 編集競合エラーの場合は、専用のstateに競合情報を格納
+        console.error('Conflict detected:', e.data);
+        error.value = e.message;
+        conflict.value = e.data;
+      } else {
+        error.value = e instanceof Error ? e.message : 'An unknown error occurred';
+        console.error(e);
+      }
+      return false;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  return {
+    // State
+    notes,
+    currentNote,
+    loading,
+    error,
+    conflict,
+    // Actions
+    fetchNotes,
+    fetchNote,
+    createNote,
+    saveNote,
+  };
 });
