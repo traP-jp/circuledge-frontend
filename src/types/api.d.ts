@@ -14,7 +14,7 @@ export interface NoteSummary {
 export interface NoteRevision {
   revision: UUID;
   channel: UUID;
-  permission: NotePermission;
+  permission: Permission;
   body: string;
 }
 
