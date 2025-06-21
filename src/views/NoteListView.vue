@@ -21,6 +21,7 @@
     <button @click="Datesort()" id="datesort">日時順でソート</button>
     <button @click="Titlesort()" id="titlesort">タイトル順でソート</button>
   </div>
+  <a href="/notes/:noteId/view">About</a>
 </template>
 
 <script setup lang="ts">
@@ -39,7 +40,20 @@ const Keywords = () => {
     console.log(keywords);
   }
 }
-
+const Setting = () => {
+  // 設定画面へ遷移
+  window.Location.href = "/settings";
+}
+const Newnote = async () => {
+  try {
+    const url = '/notes';
+    const res = await fetch(url);
+    const data = await res.json();
+    console.log(data)
+  } catch (e) {
+    console.error(e);
+  }
+}
 
 // ソート
 let datesort = true;
