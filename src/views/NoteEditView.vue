@@ -13,7 +13,7 @@
             :disabled="notesStore.loading"
           />
         </div>
-        <div class="note-info">
+        <!-- <div class="note-info">
           <label for="tags">tags</label>
           <input
             type="text"
@@ -23,7 +23,7 @@
             v-model="noteTags"
             :disabled="notesStore.loading"
           />
-        </div>
+        </div> -->
       </div>
       <div class="button-container">
         <button>キャンセル</button>
@@ -91,7 +91,7 @@ function hello() {
 
 <script setup lang="ts">
 // 必要なものをインポートする
-import { onMounted, computed } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useNotesStore } from '@/stores/notes';
 
@@ -106,38 +106,44 @@ const noteId = route.params.noteId as string;
 console.log(noteId);
 
 /**
- * ノートの本文
+ * ノートの本文（リアクティブ変数）
  */
-const noteBody = computed(() => {
-  return notesStore.currentNote?.body || '';
-});
+const noteBody = ref('');
 
 /**
- * ノートが紐づけられたチャンネル
+ * ノートが紐づけられたチャンネル（リアクティブ変数）
  */
-const noteChannel = computed(() => {
-  return notesStore.currentNote?.channel || '';
-});
+const noteChannel = ref('');
 
 /**
- * ノートに付与されたタグ
+ * ノートに付与されたタグ（リアクティブ変数）
  */
-const noteTags = computed(() => {
-  // noteSummaryからタグを取得
-  const noteSummary = notesStore.notes.find((note) => note.id === noteId);
-  return noteSummary?.tag || '';
-});
+const noteTags = ref('');
+
+// currentNoteが変更されたときに、リアクティブ変数を更新する
+watch(
+  () => notesStore.currentNote,
+  (newNote) => {
+    if (newNote) {
+      noteBody.value = newNote.body || '';
+      noteChannel.value = newNote.channel || '';
+      // タグの実装は後回し
+      noteTags.value = '';
+
+      // ちゃんと取得できているか確認
+      console.log('noteBody updated:', noteBody.value);
+      console.log('noteChannel updated:', noteChannel.value);
+      console.log('noteTags updated:', noteTags.value);
+    }
+  },
+  { immediate: true }
+);
 
 // コンポーネントがマウントされたら、ノートを取得する
 onMounted(async () => {
   if (noteId) {
     // ノート一覧とノート詳細の両方を取得
     await Promise.all([notesStore.fetchNotes(), notesStore.fetchNoteById(noteId)]);
-
-    // ちゃんと取得できているか確認
-    console.log(noteBody.value);
-    console.log(noteChannel.value);
-    console.log(noteTags.value);
   }
 });
 </script>
@@ -258,7 +264,7 @@ button {
   border: none;
   outline: none;
   resize: none;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: 'Source Code Pro', Consolas, monaco, monospace;
   font-size: 14px;
   line-height: 1.5;
   background-color: transparent;
