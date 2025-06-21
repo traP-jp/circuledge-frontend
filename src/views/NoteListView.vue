@@ -5,8 +5,8 @@
       <p>チャンネル:</p>
       <input type="search" id="channel" name="search">
       <button @click="Channel()"><img src="../assets/search_mock.png" width="25px" line-height="25px" /></button>
-      <input type="checkbox" checked>
-      <p>子チャンネルを含む</p>
+      <input type="checkbox" name="childchannel" id="childchannel" checked>
+      <label for="childchannel">子チャンネルを含む</label>
     </div>
     <div class="box">
       <p>キーワード:</p>
@@ -44,7 +44,7 @@ const Keywords = () => {
 // ソート
 let datesort = true;
 let titlesort = true;
-let sort_order = "date"; // 初期は日付順
+let sort_order: string = "date"; // 初期は日付順
 const Datesort = () => {
   datesort = !datesort; // 昇降順を切り替え
   sort_order = "date"; //日付順に設定
@@ -85,7 +85,7 @@ const Titlesort = () => {
 #setting {
   line-height: 29px;
   align-items: center;
-  line-line-height: 29px;
+  line-height: 29px;
   text-align: center;
 }
 
