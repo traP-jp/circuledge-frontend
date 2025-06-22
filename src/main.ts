@@ -4,8 +4,8 @@ import router from './router';
 import { createPinia } from 'pinia';
 
 async function enableMocking() {
-  // Viteの環境変数を利用して、開発モード（development）のときのみモックを有効にします
-  if (import.meta.env.MODE !== 'development') {
+  // Viteの環境変数を利用して、モックを有効にします
+  if (import.meta.env.VITE_ENABLE_MOCKS !== 'true') {
     return;
   }
 
