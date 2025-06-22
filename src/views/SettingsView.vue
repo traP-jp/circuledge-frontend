@@ -5,8 +5,9 @@
       <p>デフォルトのチャンネル：{{ user.defaultChannel }}</p>
       <div class="serch-inout-wrapper">
         <input type="text" id="channel" placeholder="チャンネルを検索" class="channel-search-box" />
-        <button class="search-button"><img src="../assets/search-icon-image.png" width="25px"
-            line-height="25px" /></button>
+        <button class="search-button">
+          <img src="../assets/search-icon-image.png" width="25px" line-height="25px" />
+        </button>
       </div>
     </div>
     <div class="setting-theme">
@@ -27,11 +28,11 @@ const gotoHome = () => {
 };
 
 const user = ref<UserSettings>({
-  defaultChannel: ''
+  defaultChannel: '',
 });
 </script>
 
-<style>
+<style scoped>
 h1 {
   font-size: 24px;
   margin-bottom: 20px;
