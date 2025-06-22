@@ -32,7 +32,7 @@ const user = ref<UserSettings>({
 });
 </script>
 
-<style>
+<style scoped>
 h1 {
   font-size: 24px;
   margin-bottom: 20px;
