@@ -183,9 +183,9 @@ onMounted(async () => {
       editingNote.value.tags = '';
 
       // ちゃんと取得できているか確認
-      console.log('editingNote.body updated:', editingNote.value.body);
-      console.log('editingNote.channel updated:', editingNote.value.channel);
-      console.log('editingNote.tags updated:', editingNote.value.tags);
+      // console.log('editingNote.body updated:', editingNote.value.body);
+      // console.log('editingNote.channel updated:', editingNote.value.channel);
+      // console.log('editingNote.tags updated:', editingNote.value.tags);
     }
   }
 });
