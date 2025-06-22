@@ -1,0 +1,256 @@
+:root {
+  --background-color: #abd9ae;
+  --border-color: #3f8d44;
+  --text-green-color: #1c5253;
+}
+
+/* --- 基本スタイル --- */
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
+    'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f8f9fa;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.note-list-view {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+header h1 {
+  font-size: 2.2rem;
+  color: #111;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* --- コントロールバー --- */
+.controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.search-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-grow: 1;
+  min-width: 250px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.3rem 0.5rem;
+  flex-grow: 1;
+}
+.search-box input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 1rem;
+  background-color: transparent;
+}
+
+.actions-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.filter-group label {
+  font-weight: 500;
+}
+.filter-group input[type='checkbox'] {
+  width: 1.2em;
+  height: 1.2em;
+}
+
+.loupe {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+
+button {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f5f5f5;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #e9e9e9;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.search-box button {
+  padding: 0.4rem;
+  border: none;
+  background: transparent;
+}
+
+/* --- ボタンのバリエーション --- */
+.btn-primary {
+  background-color: #258a5d;
+  color: white;
+  border-color: #258a5d;
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: #1e6e4a;
+}
+
+.btn-secondary {
+  background-color: #e9ecef;
+  color: #333;
+  border-color: #e9ecef;
+}
+.btn-secondary:hover {
+  background-color: #dce1e6;
+}
+
+.sort-bar button {
+  background-color: transparent;
+  border: 1px solid #ccc;
+  color: #555;
+}
+.sort-bar button.active {
+  background-color: #258a5d;
+  color: white;
+  border-color: #258a5d;
+}
+.sort-bar button span {
+  margin-left: 0.5em;
+}
+
+/* --- ノートグリッド --- */
+.note-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+/* --- ノートカード --- */
+.note-card {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+  cursor: pointer;
+  min-height: 180px;
+}
+
+.note-card:hover,
+.note-card:focus {
+  outline: none;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.note-card-content {
+  flex-grow: 1;
+}
+
+.note-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #222;
+  margin: 0 0 0.5rem 0;
+}
+
+.note-abstract {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0;
+}
+
+.note-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+}
+
+.note-channel {
+  color: #258a5d;
+  background-color: #eaf6f0;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.note-date {
+  color: #888;
+}
+
+/* --- 状態表示 --- */
+.loading-indicator,
+.error-message,
+.no-notes-found {
+  width: 100%;
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-size: 1.1rem;
+}
+.error-message {
+  color: #d9534f;
+  background-color: #f2dede;
+  border: 1px solid #ebccd1;
+  border-radius: 6px;
+}
+
+/* --- レスポンシブ対応 --- */
+@media (max-width: 768px) {
+  .note-list-view {
+    padding: 1rem;
+  }
+  .controls-bar,
+  .search-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .actions-group {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .note-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
