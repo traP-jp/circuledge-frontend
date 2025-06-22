@@ -16,6 +16,8 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@types/dompurify": "^3.2.0",
+    "@types/marked": "^6.0.0",
     "dompurify": "^3.2.6",
     "marked": "^15.0.12",
     "pinia": "^3.0.1",
