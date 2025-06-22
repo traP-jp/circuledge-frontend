@@ -53,12 +53,6 @@
           <div class="note-card-header">
             <h2>{{ note.title }}</h2>
           </div>
-          <div class="note-card-body">
-            <p>{{ note.summary }}</p>
-            <div v-if="note.tag && note.tag.length > 0" class="note-tag">
-              #{{ note.tag.split(',').join(' #') }}
-            </div>
-          </div>
           <div class="note-card-footer">
             更新日: {{ new Date(note.updatedAt).toLocaleDateString() }}
           </div>
@@ -260,10 +254,6 @@ onMounted(() => {
 .note-card-body {
   margin: 1rem 0;
   flex-grow: 1;
-}
-.note-tag {
-  color: #007bff;
-  font-size: 0.9em;
 }
 .note-card-footer {
   text-align: right;
