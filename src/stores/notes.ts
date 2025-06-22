@@ -1,13 +1,35 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import type { NoteSummary, NoteRevision, UUID, PutNoteRequest } from '@/types/api';
+import type { NoteSummary, NoteRevision, UUID, PutNoteRequest, NotePermission } from '@/types/api';
 import { getNotes, getNote, updateNote as apiUpdateNote, ConflictError } from '@/api/client';
+
+/** ストア内で使用するコンフリクト情報の型 */
+interface ConflictInfo {
+  /** ユーザーが編集開始時のベースrevision (例: revision A) */
+  baseRevision: NoteRevision;
+  /** サーバーの最新revision (例: revision B) */
+  latestRevision: {
+    revision: UUID;
+    channel: UUID;
+    permission: NotePermission;
+  };
+  /** ユーザーが編集した内容 */
+  userEditedContent: string;
+  /** baseRevision と latestRevision の差分 (A → Bの diff) */
+  diff: string;
+  /** 対象ノートのID */
+  noteId: UUID;
+}
 
 export const useNotesStore = defineStore('notes', () => {
   const notes = ref<NoteSummary[]>([]);
   const currentNote = ref<NoteRevision | null>(null);
+  /** 編集開始時のベースrevision（コンフリクト解決で使用） */
+  const editingBaseRevision = ref<NoteRevision | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
+  /** コンフリクト情報 */
+  const conflictInfo = ref<ConflictInfo | null>(null);
 
   /**
    * ノートの一覧を取得する
@@ -43,6 +65,18 @@ export const useNotesStore = defineStore('notes', () => {
   }
 
   /**
+   * ノート編集開始時に呼び出す（ベースrevisionを保存）
+   * @param id - ノートのUUID
+   */
+  async function startEditing(id: UUID) {
+    await fetchNoteById(id);
+    if (currentNote.value) {
+      // 編集開始時のrevisionを保存
+      editingBaseRevision.value = { ...currentNote.value };
+    }
+  }
+
+  /**
    * 指定したIDのノートを更新する
    * @param id - ノートのUUID
    * @param payload - 更新するデータ (`body` または `permission`)
@@ -56,15 +90,15 @@ export const useNotesStore = defineStore('notes', () => {
     loading.value = true;
     error.value = null;
 
-    try {
-      // APIリクエスト用のペイロードを作成
-      const requestPayload: PutNoteRequest = {
-        revision: currentNote.value.revision,
-        channel: currentNote.value.channel,
-        permission: payload.permission ?? currentNote.value.permission,
-        body: payload.body ?? currentNote.value.body,
-      };
+    // APIリクエスト用のペイロードを作成（スコープを広げる）
+    const requestPayload: PutNoteRequest = {
+      revision: currentNote.value.revision,
+      channel: currentNote.value.channel,
+      permission: payload.permission ?? currentNote.value.permission,
+      body: payload.body ?? currentNote.value.body,
+    };
 
+    try {
       // updateNoteがストアのアクション名と重複するため、apiUpdateNoteとしてインポート
       await apiUpdateNote(id, requestPayload);
 
@@ -74,7 +108,23 @@ export const useNotesStore = defineStore('notes', () => {
     } catch (e) {
       if (e instanceof ConflictError) {
         error.value = `${e.message} サーバー上の最新のノート内容を確認してください。`;
-        // 必要であれば、e.data (サーバーからの最新情報) を使ってUIを更新するなどの対応が考えられます
+
+        // 409レスポンスのデータを使用してコンフリクト情報を構築
+        if (editingBaseRevision.value) {
+          conflictInfo.value = {
+            baseRevision: editingBaseRevision.value,
+            latestRevision: {
+              revision: e.data['latest-revision'],
+              channel: e.data.channel,
+              permission: e.data.permission,
+            },
+            userEditedContent: requestPayload.body,
+            diff: e.data.diff || '',
+            noteId: id,
+          };
+        } else {
+          error.value = '編集開始時の情報が不足しているため、コンフリクト解決ができません。';
+        }
       } else if (e instanceof Error) {
         error.value = e.message;
       } else {
@@ -86,13 +136,24 @@ export const useNotesStore = defineStore('notes', () => {
   }
 
   /**
+   * コンフリクト情報をクリアする
+   */
+  function clearConflictInfo() {
+    conflictInfo.value = null;
+    editingBaseRevision.value = null;
+    error.value = null;
+  }
+
+  /**
    * ストアの状態をリセットする
    */
   function $reset() {
     notes.value = [];
     currentNote.value = null;
+    editingBaseRevision.value = null;
     loading.value = false;
     error.value = null;
+    conflictInfo.value = null;
   }
 
   return {
@@ -100,9 +161,12 @@ export const useNotesStore = defineStore('notes', () => {
     currentNote,
     loading,
     error,
+    conflictInfo,
     fetchNotes,
     fetchNoteById,
+    startEditing,
     updateNote,
+    clearConflictInfo,
     $reset,
   };
 });
