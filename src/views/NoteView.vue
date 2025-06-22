@@ -1,61 +1,74 @@
 <template>
   <div class="note-view">
-    <div class="header-controls">
-      <div class="note-info">
-        <div class="note-channel">
-          <span>channel: </span>
-          <span class="note-channel">{{ note.channel }}</span>
+    <div v-if="note">
+      <div class="header-controls">
+        <div class="note-info">
+          <div class="note-channel">
+            <span>channel: </span>
+            <span class="note-channel">{{ note.channel }}</span>
+          </div>
         </div>
-        <div class="note-tag">
-          <span>tag: </span>
-          <span class="note-tag">{{ note.tag }}</span>
+        <div class="note-actions">
+          <button @click="goToHome" class="note-action-button">ホームへ戻る</button>
+          <button @click="gotoNoteEdit" class="note-action-button">編集</button>
         </div>
       </div>
-      <div class="note-actions">
-        <button @click="goToHome" class="note-action-button">ホームへ戻る</button>
-        <button @click="gotoNoteEdit" class="note-action-button">編集</button>
-      </div>
+      <h1 class="note-title">{{ displayedTitle }}</h1>
+      <div class="note-body" v-html="renderedMarkdown"></div>
     </div>
-    <h1 class="note-title">{{ note.title }}</h1>
-    <div class="note-body" v-html="renderedMarkdown"></div>
+    <div v-else>
+      <p>読み込み中またはエラー</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { NoteSummary } from '@/types/api';
-import { ref, computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { useNotesStore } from '@/stores/notes';
 
 const router = useRouter();
+const route = useRoute();
+
 const goToHome = () => {
   router.push({ name: 'home' });
 };
+
+const currentNoteId = Array.isArray(route.params.noteId) ? route.params.noteId[0] : route.params.noteId;
 const gotoNoteEdit = () => {
-  router.push({ name: 'note-edit', params: { noteId: note.value.id } });
+  if (currentNoteId) {
+    router.push({ name: 'note-edit', params: { noteId: currentNoteId } });
+  }
 };
 
+const notesStore = useNotesStore();
+const note = computed(() => notesStore.currentNote)
+
 const renderedMarkdown = computed(() => {
-  if (!note.value.summary) {
+  if (!note.value || !note.value.body) {
     return '';
   }
   // markedでMarkdownをHTMLに変換し、DOMPurifyでサニタイズする
-  const rawHtml = marked(note.value.summary) as string;
+  const rawHtml = marked(note.value.body) as string;
   return DOMPurify.sanitize(rawHtml);
 });
 
-const note = ref<NoteSummary>({
-  id: '0197882d-208b-7c5a-bf60-89eafb904109',
-  permission: 'limited',
-  channel: 'channel-1',
-  tag: 'markdown, development',
-  title: 'Markdownの使い方',
-  summary:
-    'Markdown は色々な事が出来ます。例えば、**太字**や*斜体*、[リンク](https://example.com)など。\nまた、コードブロックも使えます。\n```javascript\nconsole.log("Hello, World!");\n```\nさらに、リストも作成できます。\n- アイテム1\n- アイテム2\n- アイテム3',
-  createdAt: 1750494000,
-  updatedAt: 1750494000,
+//本分の一行目をタイトルとする
+const displayedTitle = computed(() => {
+  if (note.value && typeof note.value.body === 'string' && note.value.body.length > 0) {
+    const lines = note.value.body.split(/\r?\n/);
+    return lines[0]; // 最初の行をタイトルとする
+  }
+  return '無題のノート'; //デフォルトタイトル
 });
+
+onMounted(() => {
+  if (currentNoteId) {
+    notesStore.fetchNoteById(currentNoteId);
+  }
+})
 </script>
 
 <style scoped>
