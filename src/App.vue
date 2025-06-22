@@ -5,10 +5,38 @@ import Header from './components/common/Header.vue';
 </script>
 
 <template>
-  <Header />
-  <main class="container">
-    <RouterView />
-  </main>
+  <div class="app">
+    <Header />
+    <main class="main-content">
+      <RouterView />
+    </main>
+  </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  overflow: auto;
+}
+</style>
+
+<!-- 次のクラスは、#app に適用させるため scoped にしない -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap');
+
+html {
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+body,
+#app {
+  height: 100%;
+}
+</style>
