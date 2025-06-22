@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
+
 import type { NoteSummary, NoteRevision, UUID, PutNoteRequest, NotePermission } from '@/types/api';
 import { getNotes, getNote, updateNote as apiUpdateNote, ConflictError } from '@/api/client';
 
@@ -108,7 +109,6 @@ export const useNotesStore = defineStore('notes', () => {
     } catch (e) {
       if (e instanceof ConflictError) {
         error.value = `${e.message} サーバー上の最新のノート内容を確認してください。`;
-
         // 409レスポンスのデータを使用してコンフリクト情報を構築
         if (editingBaseRevision.value) {
           conflictInfo.value = {
@@ -150,6 +150,8 @@ export const useNotesStore = defineStore('notes', () => {
   function $reset() {
     notes.value = [];
     currentNote.value = null;
+    loading.value = false;
+    error.value = null;
     editingBaseRevision.value = null;
     loading.value = false;
     error.value = null;
