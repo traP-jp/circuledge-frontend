@@ -1,135 +1,172 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import type {
-  NoteSummary,
-  NoteRevision,
-  UUID,
-  PutNoteRequest,
-  PutNoteConflictResponse,
-} from '@/types/api';
-import {
-  getNotes,
-  getNote,
-  createNote as apiCreateNote,
-  updateNote as apiUpdateNote,
-  ApiError,
-  ConflictError,
-} from '@/api/client';
-import { useRouter } from 'vue-router';
+import type { NoteSummary, NoteRevision, UUID, PutNoteRequest, NotePermission } from '@/types/api';
+import { getNotes, getNote, updateNote as apiUpdateNote, ConflictError } from '@/api/client';
+
+/** ストア内で使用するコンフリクト情報の型 */
+interface ConflictInfo {
+  /** ユーザーが編集開始時のベースrevision (例: revision A) */
+  baseRevision: NoteRevision;
+  /** サーバーの最新revision (例: revision B) */
+  latestRevision: {
+    revision: UUID;
+    channel: UUID;
+    permission: NotePermission;
+  };
+  /** ユーザーが編集した内容 */
+  userEditedContent: string;
+  /** baseRevision と latestRevision の差分 (A → Bの diff) */
+  diff: string;
+  /** 対象ノートのID */
+  noteId: UUID;
+}
 
 export const useNotesStore = defineStore('notes', () => {
-  const router = useRouter();
-
-  // --- State ---
   const notes = ref<NoteSummary[]>([]);
   const currentNote = ref<NoteRevision | null>(null);
+  /** 編集開始時のベースrevision（コンフリクト解決で使用） */
+  const editingBaseRevision = ref<NoteRevision | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
-  /** 編集競合が発生した際のサーバーからの情報 */
-  const conflict = ref<PutNoteConflictResponse | null>(null);
-
-  // --- Actions ---
+  /** コンフリクト情報 */
+  const conflictInfo = ref<ConflictInfo | null>(null);
 
   /**
-   * ノートのリストを取得します。
+   * ノートの一覧を取得する
    */
   async function fetchNotes() {
     loading.value = true;
     error.value = null;
     try {
-      const response = await getNotes();
+      const response = await getNotes(); // apiClient.getNotes() -> getNotes()
       notes.value = response.notes;
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'An unknown error occurred';
-      console.error(e);
+      error.value = e instanceof Error ? e.message : 'Failed to fetch notes';
     } finally {
       loading.value = false;
     }
   }
 
   /**
-   * IDを指定して単一のノートを取得します。
-   * @param id ノートのUUID
+   * 指定したIDのノート詳細を取得する
+   * @param id - ノートのUUID
    */
-  async function fetchNote(id: UUID) {
+  async function fetchNoteById(id: UUID) {
     loading.value = true;
     error.value = null;
-    currentNote.value = null;
     try {
-      const note = await getNote(id);
-      currentNote.value = note;
+      currentNote.value = await getNote(id); // apiClient.getNote(id) -> getNote(id)
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'An unknown error occurred';
-      console.error(e);
+      error.value = e instanceof Error ? e.message : `Failed to fetch note ${id}`;
+      currentNote.value = null;
     } finally {
       loading.value = false;
     }
   }
 
   /**
-   * 新しいノートを作成し、作成されたノートの編集画面に遷移します。
+   * ノート編集開始時に呼び出す（ベースrevisionを保存）
+   * @param id - ノートのUUID
    */
-  async function createNote() {
-    loading.value = true;
-    error.value = null;
-    try {
-      const newNote = await apiCreateNote();
-      // 作成成功後、ノートリストを更新し、新しいノートのページに遷移する
-      await fetchNotes();
-      router.push({ name: 'note-editor', params: { id: newNote.id } });
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'An unknown error occurred';
-      console.error(e);
-    } finally {
-      loading.value = false;
+  async function startEditing(id: UUID) {
+    await fetchNoteById(id);
+    if (currentNote.value) {
+      // 編集開始時のrevisionを保存
+      editingBaseRevision.value = { ...currentNote.value };
     }
   }
 
   /**
-   * ノートを保存（更新）します。
-   * @param noteId 更新するノートのID
-   * @param payload 更新内容
-   * @returns 成功した場合は `true`、失敗した場合は `false` を返す
+   * 指定したIDのノートを更新する
+   * @param id - ノートのUUID
+   * @param payload - 更新するデータ (`body` または `permission`)
    */
-  async function saveNote(noteId: UUID, payload: PutNoteRequest): Promise<boolean> {
+  async function updateNote(id: UUID, payload: Partial<Pick<NoteRevision, 'body' | 'permission'>>) {
+    if (!currentNote.value?.revision) {
+      error.value = '現在のノートのリビジョン情報がありません。';
+      return;
+    }
+
     loading.value = true;
     error.value = null;
-    conflict.value = null; // 前回の競合情報をクリア
+
+    // APIリクエスト用のペイロードを作成（スコープを広げる）
+    const requestPayload: PutNoteRequest = {
+      revision: currentNote.value.revision,
+      channel: currentNote.value.channel,
+      permission: payload.permission ?? currentNote.value.permission,
+      body: payload.body ?? currentNote.value.body,
+    };
 
     try {
-      await apiUpdateNote(noteId, payload);
-      // 更新が成功したら、最新のノート情報を再取得する
-      await fetchNote(noteId);
-      // ノートリストのサマリーも更新されている可能性があるのでリストも更新
-      await fetchNotes();
-      return true;
+      // updateNoteがストアのアクション名と重複するため、apiUpdateNoteとしてインポート
+      await apiUpdateNote(id, requestPayload);
+
+      // 更新が成功したら、最新のノート情報を再取得してローカルの状態を同期するのが最も安全
+      await fetchNoteById(id);
+      await fetchNotes(); // ノート一覧のサマリーなども更新するため
     } catch (e) {
       if (e instanceof ConflictError) {
-        // 編集競合エラーの場合は、専用のstateに競合情報を格納
-        console.error('Conflict detected:', e.data);
+        error.value = `${e.message} サーバー上の最新のノート内容を確認してください。`;
+
+        // 409レスポンスのデータを使用してコンフリクト情報を構築
+        if (editingBaseRevision.value) {
+          conflictInfo.value = {
+            baseRevision: editingBaseRevision.value,
+            latestRevision: {
+              revision: e.data['latest-revision'],
+              channel: e.data.channel,
+              permission: e.data.permission,
+            },
+            userEditedContent: requestPayload.body,
+            diff: e.data.diff || '',
+            noteId: id,
+          };
+        } else {
+          error.value = '編集開始時の情報が不足しているため、コンフリクト解決ができません。';
+        }
+      } else if (e instanceof Error) {
         error.value = e.message;
-        conflict.value = e.data;
       } else {
-        error.value = e instanceof Error ? e.message : 'An unknown error occurred';
-        console.error(e);
+        error.value = `Failed to update note ${id}`;
       }
-      return false;
     } finally {
       loading.value = false;
     }
+  }
+
+  /**
+   * コンフリクト情報をクリアする
+   */
+  function clearConflictInfo() {
+    conflictInfo.value = null;
+    editingBaseRevision.value = null;
+    error.value = null;
+  }
+
+  /**
+   * ストアの状態をリセットする
+   */
+  function $reset() {
+    notes.value = [];
+    currentNote.value = null;
+    editingBaseRevision.value = null;
+    loading.value = false;
+    error.value = null;
+    conflictInfo.value = null;
   }
 
   return {
-    // State
     notes,
     currentNote,
     loading,
     error,
-    conflict,
-    // Actions
+    conflictInfo,
     fetchNotes,
-    fetchNote,
-    createNote,
-    saveNote,
+    fetchNoteById,
+    startEditing,
+    updateNote,
+    clearConflictInfo,
+    $reset,
   };
 });
