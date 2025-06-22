@@ -183,8 +183,6 @@ export const useNotesStore = defineStore('notes', () => {
     loading.value = false;
     error.value = null;
     editingBaseRevision.value = null;
-    loading.value = false;
-    error.value = null;
     conflictInfo.value = null;
   }
 
