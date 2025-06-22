@@ -31,18 +31,12 @@ import Header from './components/common/Header.vue';
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap');
 
-html,
-body {
-  height: 100%;
+html {
   font-family: 'Noto Sans JP', sans-serif;
 }
 
+body,
 #app {
-  height: 100dvh;
-  font-family: 'Noto Sans JP', sans-serif;
-}
-
-* {
-  font-family: 'Noto Sans JP', sans-serif;
+  height: 100%;
 }
 </style>
