@@ -1,60 +1,97 @@
 <template>
   <div class="note-view">
-    <div class="header-controls">
-      <div class="note-info">
-        <div class="note-channel">
-          <span>channel: </span>
-          <span class="note-channel">{{ note.channel }}</span>
+    <div v-if="loading" class="loading">読み込み中...</div>
+    <div v-else-if="error" class="error">エラー: {{ error }}</div>
+    <div v-else-if="note" class="note-content">
+      <div class="header-controls">
+        <div class="note-info">
+          <div class="note-channel">channel: {{ note.channel }}</div>
+          <div class="note-permission">permission: {{ note.permission }}</div>
         </div>
-        <div class="note-tag">
-          <span>tag: </span>
-          <span class="note-tag">{{ note.tag }}</span>
+        <div class="note-actions">
+          <button class="note-action-button" @click="goHome">ホームへ戻る</button>
+          <button class="note-action-button" @click="editNote">編集</button>
         </div>
       </div>
-      <div class="note-actions">
-        <button class="note-action-button">ホームへ戻る</button>
-        <button class="note-action-button">編集</button>
-      </div>
+      <div class="note-body" v-html="renderedMarkdown"></div>
     </div>
-    <h1 class="note-title">{{ note.title }}</h1>
-    <div class="note-body" v-html="renderedMarkdown"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { NoteSummary } from '@/types/api';
-import { ref, computed } from 'vue';
+import type { NoteRevision } from '@/types/api';
+import { ref, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import { getNote } from '@/api/client';
 
-const note = ref<NoteSummary>({
-  id: '0197882d-208b-7c5a-bf60-89eafb904109',
-  permission: 'limited',
-  channel: 'channel-1',
-  tag: 'markdown, development',
-  title: 'Markdownの使い方',
-  summary:
-    'Markdown は色々な事が出来ます。例えば、**太字**や*斜体*、[リンク](https://example.com)など。\nまた、コードブロックも使えます。\n```javascript\nconsole.log("Hello, World!");\n```\nさらに、リストも作成できます。\n- アイテム1\n- アイテム2\n- アイテム3',
-  createdAt: 1750494000,
-  updatedAt: 1750494000,
-});
+const route = useRoute();
+const router = useRouter();
+const note = ref<NoteRevision | null>(null);
+const loading = ref(true);
+const error = ref<string | null>(null);
 
 const renderedMarkdown = computed(() => {
-  if (!note.value.summary) {
+  if (!note.value?.body) {
     return '';
   }
   // markedでMarkdownをHTMLに変換し、DOMPurifyでサニタイズする
-  const rawHtml = marked(note.value.summary) as string;
+  const rawHtml = marked(note.value.body) as string;
   return DOMPurify.sanitize(rawHtml);
+});
+
+const fetchNote = async () => {
+  try {
+    loading.value = true;
+    error.value = null;
+    const noteId = route.params.noteId as string;
+    const noteData = await getNote(noteId);
+    note.value = noteData;
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'ノートの取得に失敗しました';
+    console.error('Failed to fetch note:', err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const goHome = () => {
+  router.push('/notes');
+};
+
+const editNote = () => {
+  const noteId = route.params.noteId as string;
+  router.push(`/notes/${noteId}/edit`);
+};
+
+onMounted(() => {
+  fetchNote();
 });
 </script>
 
 <style scoped>
 .note-view {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  color: #333;
+  margin: auto;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  color: #666;
+}
+
+.error {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #d32f2f;
+  background-color: #ffebee;
+  border: 1px solid #f8bbd9;
+  border-radius: 4px;
+  margin: 20px 0;
 }
 
 .header-controls {
@@ -63,22 +100,25 @@ const renderedMarkdown = computed(() => {
   justify-content: space-between;
   /* 左右の要素を両端に配置 */
   align-items: center;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-bottom: 2rem;
+  /* 垂直方向の中央に揃える */
+  margin-bottom: 20px;
+  /* タイトルとの間に少し余白 */
 }
 
 .note-info {
   display: flex;
-  /* channelとtagsもFlexboxで横並びにする */
+  /* channelとpermissionもFlexboxで横並びにする */
   align-items: center;
   /* 垂直方向の中央に揃える */
   gap: 20px;
-  /* channelとtagsの間のスペース */
+  /* channelとpermissionの間のスペース */
 }
 
-.note-channel,
-.note-tag {
+.note-channel {
+  font-size: 16px;
+}
+
+.note-permission {
   font-size: 16px;
 }
 
@@ -88,7 +128,7 @@ const renderedMarkdown = computed(() => {
 }
 
 .note-action-button {
-  font-size: 0.9rem;
+  font-size: 13px;
   width: 130px;
   height: 32px;
   margin-top: 20px;
@@ -96,67 +136,16 @@ const renderedMarkdown = computed(() => {
   border: 2px solid #6edfa115;
   border-color: #6edfa115;
   border-radius: 3px;
-}
-
-.note-action-button:hover {
-  background-color: #58b582;
-  color: white;
   cursor: pointer;
 }
 
-.note-title {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-}
-.note-body {
-  line-height: 1.7;
-  font-size: 1.1rem;
-}
-.note-body :deep(pre) {
-  background-color: #f6f8fa;
-  padding: 1em;
-  border-radius: 6px;
-  border: 1px solid #dfe4ed;
-  overflow-x: auto;
-}
-.note-body :deep(code) {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-  font-size: 0.9em;
-  background-color: #f6f8fa;
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-}
-.note-body :deep(pre code) {
-  background-color: transparent;
-  padding: 0;
-  border-radius: 0;
-}
-.note-body :deep(ul),
-.note-body :deep(ol) {
-  padding-left: 2rem;
+.note-action-button:hover {
+  background-color: #5f8570;
+  border-color: #6edfa1;
 }
 
-/* --- レスポンシブ対応 --- */
-/* 画面幅が768px以下の場合に適用 */
-@media (max-width: 768px) {
-  .header-controls {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .note-actions {
-    width: 100%;
-    margin-top: 1rem;
-  }
-  .note-action-button {
-    flex-grow: 1;
-    text-align: center;
-  }
-  .note-title {
-    font-size: 2rem;
-  }
-  .note-body {
-    font-size: 1rem;
-  }
+.note-body {
+  margin-top: 20px;
+  line-height: 1.6;
 }
 </style>

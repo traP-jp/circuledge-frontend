@@ -15,7 +15,10 @@ import type {
   PutUserSettingsRequest,
 } from '../types/api';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL =
+  import.meta.env.VITE_ENABLE_MOCKS === 'true'
+    ? '/api'
+    : 'http://circuledge.ramdos.net:8080/api/v1';
 
 export class ApiError extends Error {
   constructor(
@@ -53,10 +56,17 @@ async function apiFetch(path: string, options: RequestInit = {}): Promise<Respon
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const url = `${API_BASE_URL}${path}`;
+  console.log(`API Request: ${options.method || 'GET'} ${url}`);
+
+  const response = await fetch(url, {
     ...options,
     headers,
   });
+
+  // レスポンスの詳細をログ出力
+  console.log(`API Response: ${response.status} ${response.statusText}`);
+
   return response;
 }
 
@@ -72,8 +82,37 @@ export async function getNotes(params: GetNotesRequestParams = {}): Promise<GetN
   const query = new URLSearchParams(cleanParams as Record<string, string>).toString();
 
   const response = await apiFetch(`/notes?${query}`);
-  if (!response.ok) throw new ApiError(response);
-  return response.json();
+
+  if (!response.ok) {
+    // レスポンスボディを確認してエラーの詳細を提供
+    const contentType = response.headers.get('content-type');
+    let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+
+    if (contentType?.includes('text/html')) {
+      const htmlText = await response.text();
+      console.error('HTML response received:', htmlText.substring(0, 200));
+      errorMessage += ' (HTML response received - possibly CORS or server error)';
+    } else if (contentType?.includes('application/json')) {
+      try {
+        const errorData = await response.json();
+        errorMessage += ` - ${JSON.stringify(errorData)}`;
+      } catch {
+        errorMessage += ' (Invalid JSON in error response)';
+      }
+    }
+
+    throw new ApiError(response, errorMessage);
+  }
+
+  try {
+    return await response.json();
+  } catch (error) {
+    const text = await response.text();
+    console.error('Failed to parse JSON response:', text.substring(0, 200));
+    throw new Error(
+      `Invalid JSON response: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
+  }
 }
 
 /**
