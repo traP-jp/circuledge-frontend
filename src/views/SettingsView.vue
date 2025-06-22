@@ -1,37 +1,30 @@
 <template>
   <div class="settings-container">
     <h1>設定</h1>
-
     <div class="setting-channel">
       <p>デフォルトのチャンネル：{{ user.defaultChannel }}</p>
       <div class="serch-inout-wrapper">
         <input type="text" id="channel" placeholder="チャンネルを検索" class="channel-search-box" />
-        <button class="search-button"><img src="../assets/search-icon-image.png" width="25px" line-height="25px" /></button>
+        <button class="search-button"><img src="../assets/search-icon-image.png" width="25px"
+            line-height="25px" /></button>
       </div>
-
-
     </div>
     <div class="setting-theme">
       <p>テーマ：</p>
     </div>
     <button class="action-button">保存</button>
   </div>
-
-
-
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { UserSettings } from '@/types/api';
 
-
 const user = ref<UserSettings>({
   defaultChannel: ''
 });
-
-
 </script>
+
 <style>
 h1 {
   font-size: 24px;
@@ -41,8 +34,8 @@ h1 {
 
 .settings-container {
   max-width: 800px;
-  margin: auto;
-
+  padding: 2rem;
+  margin: 0 auto;
 }
 
 .setting-channel {
@@ -108,18 +101,39 @@ p {
 }
 
 .action-button {
-  font-size: 13px;
-  width: 130px;
-  height: 32px;
-  margin-top: 20px;
+  font-size: 0.9rem;
+  padding: 0.6rem 1.5rem;
   background-color: #58b5828a;
-  border: 2px;
-  border-color: #6edfa115;
+  border: 2px solid #6edfa115;
   border-radius: 3px;
 }
+
 .action-button:hover {
   background-color: #58b582;
   color: white;
   cursor: pointer;
+}
+
+/* --- レスポンシブ対応 --- */
+/* 画面幅が768px以下の場合に適用 */
+@media (max-width: 768px) {
+  .settings-container {
+    padding: 1rem;
+  }
+
+  .setting-channel,
+  .setting-theme {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .serch-inout-wrapper {
+    width: 100%;
+  }
+
+  .action-button {
+    width: 50%;
+    margin-top: 10px;
+  }
 }
 </style>
