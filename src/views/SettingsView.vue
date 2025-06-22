@@ -12,13 +12,19 @@
     <div class="setting-theme">
       <p>テーマ：</p>
     </div>
-    <button class="action-button">保存</button>
+    <button @click="gotoHome" class="action-button">保存</button>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { UserSettings } from '@/types/api';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+const gotoHome = () => {
+  router.push({ name: 'home' });
+};
 
 const user = ref<UserSettings>({
   defaultChannel: ''

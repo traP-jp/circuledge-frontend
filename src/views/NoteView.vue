@@ -12,8 +12,8 @@
         </div>
       </div>
       <div class="note-actions">
-        <button class="note-action-button">ホームへ戻る</button>
-        <button class="note-action-button">編集</button>
+        <button @click="goToHome" class="note-action-button">ホームへ戻る</button>
+        <button @click="gotoNoteEdit" class="note-action-button">編集</button>
       </div>
     </div>
     <h1 class="note-title">{{ note.title }}</h1>
@@ -26,6 +26,15 @@ import type { NoteSummary } from '@/types/api';
 import { ref, computed } from 'vue';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+const goToHome = () => {
+  router.push({ name: 'home' });
+};
+const gotoNoteEdit = () => {
+  router.push({ name: 'note-edit', params: { noteId: note.value.id } });
+};
 
 const renderedMarkdown = computed(() => {
   if (!note.value.summary) {
