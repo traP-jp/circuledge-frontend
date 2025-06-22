@@ -27,8 +27,8 @@
         </div> -->
       </div>
       <div class="button-container">
-        <button>キャンセル</button>
-        <button>保存</button>
+        <button @click="handleCancel">キャンセル</button>
+        <button @click="handleSave" :disabled="notesStore.loading">保存</button>
       </div>
     </div>
     <div class="editor-container">
@@ -93,10 +93,12 @@ function hello() {
 <script setup lang="ts">
 // 必要なものをインポートする
 import { onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useNotesStore } from '@/stores/notes';
+import { updateNote, ConflictError } from '@/api/client';
 
 const route = useRoute();
+const router = useRouter();
 const notesStore = useNotesStore();
 
 /**
@@ -120,6 +122,52 @@ const noteChannel = ref('');
  * ノートに付与されたタグ
  */
 const noteTags = ref('');
+
+/**
+ * 保存ボタンがクリックされた時の処理
+ */
+const handleSave = async () => {
+  try {
+    // 現在のノートの情報を取得
+    const currentNote = notesStore.currentNote;
+    if (!currentNote) {
+      console.error('Current note not found');
+      return;
+    }
+
+    // ノートを更新
+    await updateNote(noteId, {
+      body: noteBody.value,
+      channel: noteChannel.value,
+      revision: currentNote.revision,
+      permission: currentNote.permission,
+    });
+
+    // 成功時はノート詳細画面に遷移
+    router.push(`/notes/${noteId}`);
+    throw new Error();
+  } catch (error) {
+    if (error instanceof ConflictError) {
+      // 編集競合が発生したときは、:noteId/conflict へ遷移
+      router.push({ name: 'note-conflict', params: { noteId: noteId } });
+    } else {
+      // conflict 以外のエラーはコンソールへ
+      console.error('Failed to save note:', error);
+    }
+  }
+};
+
+/**
+ * キャンセルボタンがクリックされた時の処理
+ */
+const handleCancel = () => {
+  const result = confirm('未保存の内容が破棄されますが、よろしいですか？');
+  if (result) {
+    // OKが選択された場合、データを保存せずにノート詳細画面に遷移
+    router.push({ name: 'note-view', params: { noteId: noteId } });
+  }
+  // キャンセルが選択された場合は何もしない（編集画面に残る）
+};
 
 // currentNoteが変更されたときに、リアクティブ変数を更新する
 watch(
@@ -287,41 +335,41 @@ button {
   overflow-y: auto;
 }
 
-.preview-content h1 {
+.preview-content :deep(h1) {
   margin: 0 0 1em 0;
   font-size: 24px;
   font-weight: bold;
   color: #333;
 }
 
-.preview-content h2 {
+.preview-content :deep(h2) {
   margin: 1.5em 0 0.5em 0;
   font-size: 20px;
   font-weight: bold;
   color: #333;
 }
 
-.preview-content p {
+.preview-content :deep(p) {
   margin: 0 0 1em 0;
   font-size: 14px;
   line-height: 1.5;
   color: #333;
 }
 
-.preview-content ul,
-.preview-content ol {
+.preview-content :deep(ul),
+.preview-content :deep(ol) {
   margin: 0 0 1em 0;
   padding-left: 2em;
 }
 
-.preview-content li {
+.preview-content :deep(li) {
   margin: 0.25em 0;
   font-size: 14px;
   line-height: 1.5;
   color: #333;
 }
 
-.preview-content code {
+.preview-content :deep(code) {
   background-color: #f5f5f5;
   padding: 2px 4px;
   border-radius: 3px;
@@ -329,7 +377,7 @@ button {
   font-size: 13px;
 }
 
-.preview-content pre {
+.preview-content :deep(pre) {
   background-color: #f5f5f5;
   padding: 1em;
   border-radius: 5px;
@@ -337,30 +385,30 @@ button {
   margin: 0 0 1em 0;
 }
 
-.preview-content pre code {
+.preview-content :deep(pre code) {
   background-color: transparent;
   padding: 0;
   font-size: 13px;
   line-height: 1.4;
 }
 
-.preview-content blockquote {
+.preview-content :deep(blockquote) {
   border-left: 4px solid #ddd;
   margin: 0 0 1em 0;
   padding-left: 1em;
   color: #666;
 }
 
-.preview-content blockquote p {
+.preview-content :deep(blockquote p) {
   margin: 0;
 }
 
-.preview-content a {
+.preview-content :deep(a) {
   color: #0066cc;
   text-decoration: underline;
 }
 
-.preview-content a:hover {
+.preview-content :deep(a:hover) {
   color: #0052a3;
 }
 </style>
