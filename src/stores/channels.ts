@@ -15,7 +15,8 @@ export const useChannelsStore = defineStore('channels', () => {
     loading.value = true;
     error.value = null;
     try {
-      channels.value = await getChannels();
+      const channelsResponse = await getChannels();
+      channels.value = channelsResponse.sort((a, b) => a.path.localeCompare(b.path));
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to fetch channels';
     } finally {
