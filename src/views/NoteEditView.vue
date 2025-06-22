@@ -9,7 +9,7 @@
             name="channel"
             id="channel"
             placeholder="#event/hackathon/25spring/16"
-            v-model="noteChannel"
+            v-model="editingNote.channel"
             :disabled="notesStore.loading"
           />
         </div>
@@ -39,7 +39,7 @@
         <div class="editor-content">
           <textarea
             placeholder="このノートは、Markdown 形式で入力できます。traQ のチャンネルと紐づけることで、ノートを簡単に管理できます。"
-            v-model="noteBody"
+            v-model="editingNote.body"
             :disabled="notesStore.loading"
           ></textarea>
         </div>
@@ -92,7 +92,7 @@ function hello() {
 
 <script setup lang="ts">
 // 必要なものをインポートする
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useNotesStore } from '@/stores/notes';
 import { updateNote, ConflictError } from '@/api/client';
@@ -109,19 +109,13 @@ const noteId = route.params.noteId as string;
 console.log(noteId);
 
 /**
- * ノートの本文
+ * 編集中のノートデータ
  */
-const noteBody = ref('');
-
-/**
- * ノートが紐づけられたチャンネル
- */
-const noteChannel = ref('');
-
-/**
- * ノートに付与されたタグ
- */
-const noteTags = ref('');
+const editingNote = ref({
+  body: '',
+  channel: '',
+  tags: '',
+});
 
 /**
  * 保存ボタンがクリックされた時の処理
@@ -137,15 +131,20 @@ const handleSave = async () => {
 
     // ノートを更新
     await updateNote(noteId, {
-      body: noteBody.value,
-      channel: noteChannel.value,
+      body: editingNote.value.body,
+      channel: editingNote.value.channel,
       revision: currentNote.revision,
       permission: currentNote.permission,
     });
 
-    // 成功時はノート詳細画面に遷移
-    router.push(`/notes/${noteId}`);
-    throw new Error();
+    // 編集中のデータをstoreのcurrentNoteに反映
+    if (notesStore.currentNote) {
+      notesStore.currentNote.body = editingNote.value.body;
+      notesStore.currentNote.channel = editingNote.value.channel;
+    }
+
+    // ノート詳細画面に遷移
+    router.push({ name: 'note-view', params: { noteId: noteId } });
   } catch (error) {
     if (error instanceof ConflictError) {
       // 編集競合が発生したときは、:noteId/conflict へ遷移
@@ -169,31 +168,31 @@ const handleCancel = () => {
   // キャンセルが選択された場合は何もしない（編集画面に残る）
 };
 
-// currentNoteが変更されたときに、リアクティブ変数を更新する
-watch(
-  () => notesStore.currentNote,
-  (newNote) => {
-    if (newNote) {
-      noteBody.value = newNote.body || '';
-      noteChannel.value = newNote.channel || '';
-      // タグの実装は後回し
-      noteTags.value = '';
-
-      // ちゃんと取得できているか確認
-      console.log('noteBody updated:', noteBody.value);
-      console.log('noteChannel updated:', noteChannel.value);
-      console.log('noteTags updated:', noteTags.value);
-    }
-  },
-  { immediate: true }
-);
-
 // コンポーネントがマウントされたら、ノートを取得する
 onMounted(async () => {
   if (noteId) {
-    // ノート一覧とノート詳細の両方を取得
-    await Promise.all([notesStore.fetchNotes(), notesStore.fetchNoteById(noteId)]);
+    // ノート詳細を取得
+    await notesStore.fetchNoteById(noteId);
+
+    // 取得したノートデータをeditingNoteに設定
+    const currentNote = notesStore.currentNote;
+    if (currentNote) {
+      editingNote.value.body = currentNote.body || '';
+      editingNote.value.channel = currentNote.channel || '';
+      // タグの実装は後回し
+      editingNote.value.tags = '';
+
+      // ちゃんと取得できているか確認
+      console.log('editingNote.body updated:', editingNote.value.body);
+      console.log('editingNote.channel updated:', editingNote.value.channel);
+      console.log('editingNote.tags updated:', editingNote.value.tags);
+    }
   }
+});
+
+// コンポーネントがアンマウントされたら、currentNoteのデータをクリアする
+onUnmounted(() => {
+  notesStore.currentNote = null;
 });
 </script>
 
