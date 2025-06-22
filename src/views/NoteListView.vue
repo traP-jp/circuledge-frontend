@@ -196,7 +196,7 @@ onUnmounted(() => {
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-  font-family: sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #333;
 }
 
@@ -208,6 +208,10 @@ onUnmounted(() => {
   flex-wrap: wrap; /* 画面が狭い時に折り返す */
   gap: 1.5rem;
   margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .search-group {
@@ -232,43 +236,51 @@ onUnmounted(() => {
 /* --- ボタンと入力欄の共通スタイル --- */
 label {
   font-size: 0.9rem;
-  color: #333;
+  color: #1c5253;
+  font-weight: 500;
 }
 
 input[type='search'],
 input[type='text'] {
-  padding: 0.5rem 0.8rem;
+  padding: 0.6rem 0.8rem;
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 6px;
+  background-color: #fff;
   transition:
     border-color 0.2s,
     box-shadow 0.2s;
+  min-width: 200px;
 }
 
 input[type='search']:focus,
 input[type='text']:focus {
   outline: none;
-  border-color: #3F8D44;
-  box-shadow: 0 0 0 3px rgba(37, 138, 93, 0.2);
+  border-color: #3f8d44;
+  box-shadow: 0 0 0 3px rgba(63, 141, 68, 0.2);
 }
 
 input[type='checkbox'] {
   width: 1.2em;
   height: 1.2em;
+  accent-color: #3f8d44;
 }
 
 .loupe {
   width: 20px;
   height: 20px;
   vertical-align: middle;
-  fill: #888;
+  fill: #1c5253;
 }
 
 .sort-bar {
   display: flex;
   gap: 0.5rem;
   margin-bottom: 1.5rem; /* note-gridとの間にマージンを追加 */
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 button {
@@ -279,19 +291,31 @@ button {
   border-radius: 6px;
   background-color: #f5f5f5;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+  font-family: inherit;
 }
 
-button:hover {
+button:hover:not(:disabled) {
   background-color: #e9e9e9;
 }
 
-.btn-primary {
-  background-color: #ABD9AE;
-  border-color: #3F8D44;
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
+
+.btn-primary {
+  background-color: #abd9ae;
+  border-color: #3f8d44;
+  color: #1c5253;
+}
+
 .btn-primary:hover:not(:disabled) {
-  background-color: #58b582;
+  background-color: #9dd0a1;
+  border-color: #2f6d33;
 }
 
 .sort-bar button {
@@ -299,9 +323,16 @@ button:hover {
   border: 1px solid #ccc;
   color: #555;
 }
+
 .sort-bar button.active {
-  background-color: #ABD9AE;
-  border-color: #ABD9AE;
+  background-color: #abd9ae;
+  border-color: #3f8d44;
+  color: #1c5253;
+}
+
+.sort-bar button:hover:not(.active) {
+  background-color: #f0f8f1;
+  border-color: #abd9ae;
 }
 
 /* --- ノートグリッド --- */
@@ -309,6 +340,10 @@ button:hover {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 1.5rem;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* --- 状態表示 --- */
@@ -317,9 +352,24 @@ button:hover {
 .no-notes-found {
   width: 100%;
   text-align: center;
-  padding: 2rem;
+  padding: 3rem 2rem;
   color: #666;
   font-size: 1.1rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.error-message {
+  color: #d32f2f;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.loading-indicator {
+  color: #1c5253;
+  background-color: #f0f8f1;
+  border: 1px solid #abd9ae;
 }
 
 /* --- レスポンシブ対応 --- */
@@ -327,13 +377,51 @@ button:hover {
   .note-list-view {
     padding: 1rem;
   }
+
   .controls-bar,
   .search-group {
     flex-direction: column;
     align-items: stretch;
   }
+
+  .search-box {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  input[type='search'],
+  input[type='text'] {
+    min-width: 100%;
+  }
+
   .note-grid {
     grid-template-columns: 1fr;
+    padding: 0.5rem;
+  }
+
+  .sort-bar {
+    flex-wrap: wrap;
+    padding: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .note-list-view {
+    padding: 0.5rem;
+  }
+
+  .controls-bar {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .search-group {
+    gap: 1rem;
+  }
+
+  button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
   }
 }
 </style>

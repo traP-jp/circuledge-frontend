@@ -32,6 +32,15 @@ export const useChannelsStore = defineStore('channels', () => {
   }
 
   /**
+   * チャンネルIDからチャンネルパスを取得する
+   * @param channelId - チャンネルのUUID
+   */
+  function getChannelPathById(channelId: UUID): string {
+    const channel = channels.value.find((channel) => channel.id === channelId);
+    return channel?.path || '';
+  }
+
+  /**
    * チャンネルパスでチャンネルを検索する
    * @param path - 検索するパス
    */
@@ -122,6 +131,7 @@ export const useChannelsStore = defineStore('channels', () => {
     channelTree,
     fetchChannels,
     getChannelById,
+    getChannelPathById,
     getChannelByPath,
     searchChannels,
     getChildChannels,
