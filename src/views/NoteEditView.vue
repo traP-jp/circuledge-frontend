@@ -46,44 +46,11 @@
       </div>
       <div class="preview-pane">
         <div class="preview-content">
-          <h1>Lorem ipsum</h1>
-          <p>
-            dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
-            et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
-            laboris nisi ut aliquip ex ea commodo consequat.
-          </p>
-
-          <h2>サブヘッダー</h2>
-
-          <p><strong>太字のテキスト</strong>と<em>斜体のテキスト</em>の例です。</p>
-
-          <ul>
-            <li>リストアイテム1</li>
-            <li>リストアイテム2</li>
-            <li>リストアイテム3</li>
-          </ul>
-
-          <ol>
-            <li>番号付きリスト1</li>
-            <li>番号付きリスト2</li>
-            <li>番号付きリスト3</li>
-          </ol>
-
-          <p><code>インラインコード</code>の例です。</p>
-
-          <pre><code class="language-javascript">// コードブロックの例
-function hello() {
-  console.log("Hello, World!");
-}</code></pre>
-
-          <blockquote>
-            <p>
-              これは引用文です。<br />
-              複数行にわたって書くことができます。
-            </p>
-          </blockquote>
-
-          <p><a href="https://example.com">リンクの例</a></p>
+          <div v-if="editingNote.body" v-html="renderedMarkdown"></div>
+          <div v-else class="empty-preview">
+            プレビューエリア<br />
+            左側でMarkdownを入力すると、ここにリアルタイムでプレビューが表示されます。
+          </div>
         </div>
       </div>
     </div>
@@ -92,10 +59,12 @@ function hello() {
 
 <script setup lang="ts">
 // 必要なものをインポートする
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useNotesStore } from '@/stores/notes';
 import { updateNote, ConflictError } from '@/api/client';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
 const route = useRoute();
 const router = useRouter();
@@ -115,6 +84,19 @@ const editingNote = ref({
   body: '',
   channel: '',
   tags: '',
+});
+
+/**
+ * 編集中のMarkdownをレンダリングした結果
+ */
+const renderedMarkdown = computed(() => {
+  if (!editingNote.value.body) {
+    return '';
+  }
+
+  // markedでMarkdownをHTMLに変換し、DOMPurifyでサニタイズする
+  const rawHtml = marked(editingNote.value.body) as string;
+  return DOMPurify.sanitize(rawHtml);
 });
 
 /**
@@ -372,7 +354,7 @@ button {
   background-color: #f5f5f5;
   padding: 2px 4px;
   border-radius: 3px;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: 'Source Code Pro', Consolas, monaco, monospace;
   font-size: 13px;
 }
 
@@ -409,5 +391,13 @@ button {
 
 .preview-content :deep(a:hover) {
   color: #0052a3;
+}
+
+.empty-preview {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 2em;
+  line-height: 1.6;
 }
 </style>
