@@ -49,13 +49,6 @@ export interface GetNotesResponse {
 }
 
 // POST /notes
-export interface PostNoteRequest {
-  title: string;
-  body: string;
-  channel: UUID;
-  permission: NotePermission;
-}
-
 export interface PostNoteResponse {
   id: UUID;
   channel: UUID;
@@ -76,7 +69,7 @@ export interface PutNoteConflictResponse {
   'latest-revision': UUID;
   channel: UUID;
   permission: NotePermission;
-  diff: string;
+  diff: string; // baseRevision (編集開始時) と latestRevision (現在のサーバー) の差分
 }
 
 // GET /notes/:note-id

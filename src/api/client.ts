@@ -15,7 +15,7 @@ import type {
   PutUserSettingsRequest,
 } from '../types/api';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://circuledge.ramdos.net:8080/api/v1';
 
 export class ApiError extends Error {
   constructor(

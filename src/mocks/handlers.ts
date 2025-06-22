@@ -120,9 +120,9 @@ export const handlers = [
     if (!note) {
       return new HttpResponse(null, { status: 404 });
     }
-    // 履歴のモックとして現在のリビジョンのみを返す
+    // 複数の履歴リビジョンをモック
     const response: GetNoteHistoryResponse = {
-      total: 1,
+      total: 3,
       notes: [
         {
           revision: note.revision,
@@ -131,6 +131,22 @@ export const handlers = [
           body: note.body,
           createdAt: Date.now(),
           updatedAt: Date.now(),
+        },
+        {
+          revision: crypto.randomUUID(),
+          channel: note.channel,
+          permission: note.permission,
+          body: note.body + '\n\n（前回の編集内容）',
+          createdAt: Date.now() - 3600000, // 1時間前
+          updatedAt: Date.now() - 3600000,
+        },
+        {
+          revision: crypto.randomUUID(),
+          channel: note.channel,
+          permission: note.permission,
+          body: '（初期版の内容）',
+          createdAt: Date.now() - 7200000, // 2時間前
+          updatedAt: Date.now() - 7200000,
         },
       ],
     };
