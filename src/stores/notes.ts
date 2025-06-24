@@ -37,6 +37,7 @@ interface ConflictInfo {
 
 export const useNotesStore = defineStore('notes', () => {
   const notes = ref<NoteSummary[]>([]);
+  const total = ref<number>(0); // 検索結果の総数を追加
   const currentNote = ref<NoteRevision | null>(null);
   /** 編集開始時のベースrevision（コンフリクト解決で使用） */
   const editingBaseRevision = ref<NoteRevision | null>(null);
@@ -54,6 +55,7 @@ export const useNotesStore = defineStore('notes', () => {
     try {
       const response = await getNotes(params); // パラメータを渡す
       notes.value = response.notes;
+      total.value = response.total; // 総数を保存
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to fetch notes';
     } finally {
@@ -179,6 +181,7 @@ export const useNotesStore = defineStore('notes', () => {
    */
   function $reset() {
     notes.value = [];
+    total.value = 0; // 総数もリセット
     currentNote.value = null;
     loading.value = false;
     error.value = null;
@@ -188,6 +191,7 @@ export const useNotesStore = defineStore('notes', () => {
 
   return {
     notes,
+    total, // 総数を公開
     currentNote,
     loading,
     error,

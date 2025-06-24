@@ -74,8 +74,8 @@ class MockDB {
       body: 'あのイーハトーヴォのすきとおった風、夏でも底に冷たさをもつ青いそら、うつくしい森で飾られたモリーオ市、郊外のぎらぎらひかる草の波。',
       summary: 'あのイーハトーヴォの...',
       tag: '宮沢賢治',
-      createdAt: 1750486800000, // 2025-06-21T09:00:00Z
-      updatedAt: 1750486800000, // 2025-06-21T09:00:00Z
+      createdAt: 1750486800, // 2025-06-21T09:00:00Z
+      updatedAt: 1750486800, // 2025-06-21T09:00:00Z
     };
     const note2: DbNote = {
       id: '0197882d-208b-7c5a-bf60-89eafb904107',
@@ -86,8 +86,8 @@ class MockDB {
       body: 'APIのモックにはmswを使うと便利です。フロントエンドとバックエンドの並行開発がスムーズに進みます。\n\n## 主な利点\n\n- リアルタイムでAPIレスポンスをテスト可能\n- バックエンド開発を待たずにフロントエンド開発を進められる\n- エラーケースのテストが簡単',
       summary: 'mswを使ったAPIモック',
       tag: 'frontend,hackathon,development',
-      createdAt: 1750488600000, // 2025-06-21T09:30:00Z
-      updatedAt: 1750488600000, // 2025-06-21T09:30:00Z
+      createdAt: 1750488600, // 2025-06-21T09:30:00Z
+      updatedAt: 1750488600, // 2025-06-21T09:30:00Z
     };
     const note3: DbNote = {
       id: '0197882d-208b-7c5a-bf60-89eafb904108',
@@ -98,8 +98,8 @@ class MockDB {
       body: 'バックエンドの設計では、APIの設計とデータベースの正規化が重要です。特に、スケーラビリティを考慮した設計が求められます。\n\n## 設計のポイント\n\n1. RESTful APIの設計\n2. データベースの正規化\n3. セキュリティの考慮\n4. パフォーマンスの最適化',
       summary: 'バックエンドの設計ポイント',
       tag: 'backend,hackathon,development',
-      createdAt: 1750490400000, // 2025-06-21T10:00:00Z
-      updatedAt: 1750490400000, // 2025-06-21T10:00:00Z
+      createdAt: 1750490400, // 2025-06-21T10:00:00Z
+      updatedAt: 1750490400, // 2025-06-21T10:00:00Z
     };
     const note4: DbNote = {
       id: '0197882d-208b-7c5a-bf60-89eafb904109',
@@ -110,8 +110,8 @@ class MockDB {
       body: 'Markdown は色々な事が出来ます。例えば、**太字**や*斜体*、[リンク](https://example.com)など。\nまた、コードブロックも使えます。\n```javascript\nconsole.log("Hello, World!");\n```\n',
       summary: 'Markdownの使い方',
       tag: 'markdown,development',
-      createdAt: 1750494000000, // 2025-06-21T11:00:00Z
-      updatedAt: 1750494000000, // 2025-06-21T11:00:00Z
+      createdAt: 1750494000, // 2025-06-21T11:00:00Z
+      updatedAt: 1750494000, // 2025-06-21T11:00:00Z
     };
     const note5: DbNote = {
       id: '0197882d-208b-7c5a-bf60-89eafb90410a',
@@ -122,8 +122,8 @@ class MockDB {
       body: '良いUIデザインのための基本原則について説明します。\n\n## デザインの基本原則\n\n1. **一貫性**: 同じ要素は同じ見た目・動作にする\n2. **視認性**: 重要な情報は目立つようにする\n3. **フィードバック**: ユーザーの操作に対して適切な反応を示す\n4. **アクセシビリティ**: 誰もが使いやすいインターフェースにする\n\n## カラーパレット\n\n- Primary: #3B82F6\n- Secondary: #10B981\n- Warning: #F59E0B\n- Error: #EF4444',
       summary: 'UIデザインの基本原則とカラーパレット',
       tag: 'design,ui,accessibility',
-      createdAt: 1750497600000, // 2025-06-21T12:00:00Z
-      updatedAt: 1750497600000, // 2025-06-21T12:00:00Z
+      createdAt: 1750497600, // 2025-06-21T12:00:00Z
+      updatedAt: 1750497600, // 2025-06-21T12:00:00Z
     };
     const note6: DbNote = {
       id: '0197882d-208b-7c5a-bf60-89eafb90410b',
@@ -134,8 +134,8 @@ class MockDB {
       body: '# CircleEdge プロジェクト計画\n\n## 概要\n\nCircleEdgeは、サークル活動におけるノート共有とコラボレーションを効率化するWebアプリケーションです。\n\n## 目標\n\n- メンバー間での情報共有を円滑にする\n- リアルタイムコラボレーションを可能にする\n- 過去の履歴を簡単に追跡できる\n\n## スケジュール\n\n- Phase 1: 基本機能実装 (6月)\n- Phase 2: リアルタイム機能 (7月)\n- Phase 3: 高度な検索機能 (8月)',
       summary: 'CircleEdgeプロジェクトの全体計画',
       tag: 'planning,project,circuledge',
-      createdAt: 1750501200000, // 2025-06-21T13:00:00Z
-      updatedAt: 1750501200000, // 2025-06-21T13:00:00Z
+      createdAt: 1750501200, // 2025-06-21T13:00:00Z
+      updatedAt: 1750501200, // 2025-06-21T13:00:00Z
     };
     const note7: DbNote = {
       id: '0197882d-208b-7c5a-bf60-89eafb90410c',
@@ -146,8 +146,8 @@ class MockDB {
       body: "Vue.js 3とTypeScriptを組み合わせた開発のベストプラクティスをまとめます。\n\n## Composition APIの活用\n\n```typescript\nimport { ref, computed } from 'vue';\n\nexport default defineComponent({\n  setup() {\n    const count = ref(0);\n    const doubleCount = computed(() => count.value * 2);\n    \n    const increment = () => {\n      count.value++;\n    };\n    \n    return {\n      count,\n      doubleCount,\n      increment\n    };\n  }\n});\n```\n\n## 型安全性の確保\n\n- 適切な型定義を作成する\n- Genericsを活用する\n- strict modeを有効にする",
       summary: 'Vue.js 3とTypeScriptの開発手法',
       tag: 'vue,typescript,frontend,development',
-      createdAt: 1750504800000, // 2025-06-21T14:00:00Z
-      updatedAt: 1750504800000, // 2025-06-21T14:00:00Z
+      createdAt: 1750504800, // 2025-06-21T14:00:00Z
+      updatedAt: 1750504800, // 2025-06-21T14:00:00Z
     };
     const note8: DbNote = {
       id: '0197882d-208b-7c5a-bf60-89eafb90410d',
@@ -158,8 +158,8 @@ class MockDB {
       body: "# JavaScript学習の記録\n\n## 今日学んだこと\n\n### 非同期処理\n\n- Promiseの基本的な使い方\n- async/awaitの活用方法\n- エラーハンドリングのベストプラクティス\n\n```javascript\nasync function fetchData() {\n  try {\n    const response = await fetch('/api/data');\n    const data = await response.json();\n    return data;\n  } catch (error) {\n    console.error('Error fetching data:', error);\n    throw error;\n  }\n}\n```\n\n### 配列操作メソッド\n\n- map(), filter(), reduce()の違いと使い分け\n- forEach()との違い\n- チェーンメソッドの活用",
       summary: 'JavaScript非同期処理と配列操作の学習記録',
       tag: 'javascript,learning,async,array',
-      createdAt: 1750508400000, // 2025-06-21T15:00:00Z
-      updatedAt: 1750508400000, // 2025-06-21T15:00:00Z
+      createdAt: 1750508400, // 2025-06-21T15:00:00Z
+      updatedAt: 1750508400, // 2025-06-21T15:00:00Z
     };
     const note9: DbNote = {
       id: '0197882d-208b-7c5a-bf60-89eafb90410e',
@@ -170,8 +170,8 @@ class MockDB {
       body: '# 2025年春季ハッカソン振り返り\n\n## 良かった点\n\n- チーム連携がスムーズだった\n- 技術選定が適切だった\n- 時間管理ができていた\n- プレゼンテーションが効果的だった\n\n## 改善点\n\n- 初期要件定義により時間をかけるべきだった\n- テストケースの準備が不十分だった\n- デザインシステムの統一性を高める必要があった\n\n## 次回への活かし方\n\n- 事前準備により多くの時間を割く\n- テスト駆動開発を取り入れる\n- デザインガイドラインを最初に決める',
       summary: 'ハッカソンの成果と反省点、次回への改善案',
       tag: 'hackathon,retrospective,teamwork',
-      createdAt: 1750512000000, // 2025-06-21T16:00:00Z
-      updatedAt: 1750512000000, // 2025-06-21T16:00:00Z
+      createdAt: 1750512000, // 2025-06-21T16:00:00Z
+      updatedAt: 1750512000, // 2025-06-21T16:00:00Z
     };
     const note10: DbNote = {
       id: '0197882d-208b-7c5a-bf60-89eafb90410f',
@@ -182,8 +182,8 @@ class MockDB {
       body: '# RESTful API設計ガイドライン\n\n## 基本原則\n\n### URLの設計\n\n- リソース指向の設計\n- 複数形での命名（例: `/users`, `/notes`）\n- 階層構造の適切な表現\n\n### HTTPメソッドの使い分け\n\n- `GET`: データの取得\n- `POST`: 新規作成\n- `PUT`: 全体更新\n- `PATCH`: 部分更新\n- `DELETE`: 削除\n\n### ステータスコード\n\n- 200: 成功\n- 201: 作成成功\n- 400: リクエストエラー\n- 401: 認証エラー\n- 404: リソースが見つからない\n- 500: サーバーエラー\n\n## レスポンス形式\n\n```json\n{\n  "data": {},\n  "meta": {\n    "total": 100,\n    "page": 1,\n    "limit": 10\n  },\n  "errors": []\n}\n```',
       summary: 'RESTful APIの設計指針とベストプラクティス',
       tag: 'api,rest,backend,guidelines',
-      createdAt: 1750515600000, // 2025-06-21T17:00:00Z
-      updatedAt: 1750515600000, // 2025-06-21T17:00:00Z
+      createdAt: 1750515600, // 2025-06-21T17:00:00Z
+      updatedAt: 1750515600, // 2025-06-21T17:00:00Z
     };
     this.notes.set(note1.id, note1);
     this.notes.set(note2.id, note2);

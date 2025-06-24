@@ -73,13 +73,13 @@
 
     <!-- ソートボタンのエリア -->
     <div class="sort-bar">
-      <button @click="toggleSort('date')" :class="{ active: sortKey === 'date' }">
+      <button @click="toggleSort('date')" :class="{ active: sortKey.startsWith('date') }">
         日時順でソート
-        <span v-if="sortKey === 'date'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+        <span v-if="sortKey.startsWith('date')">{{ sortKey === 'dateAsc' ? '▲' : '▼' }}</span>
       </button>
-      <button @click="toggleSort('title')" :class="{ active: sortKey === 'title' }">
+      <button @click="toggleSort('title')" :class="{ active: sortKey.startsWith('title') }">
         タイトル順でソート
-        <span v-if="sortKey === 'title'">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
+        <span v-if="sortKey.startsWith('title')">{{ sortKey === 'titleAsc' ? '▲' : '▼' }}</span>
       </button>
     </div>
 
@@ -89,20 +89,34 @@
 
     <!-- ノート一覧のグリッドエリア -->
     <div v-if="!loading && !error" class="note-grid">
-      <div v-if="sortedNotes.length === 0" class="no-notes-found">ノートが見つかりません。</div>
+      <div v-if="notes.length === 0" class="no-notes-found">ノートが見つかりません。</div>
       <div v-else class="notes-info">
-        <small>{{ sortedNotes.length }} 件のノートを表示中</small>
+        <small
+          >{{ notes.length }} 件のノートを表示中（全 {{ totalItems }} 件中 {{ currentPage }} /
+          {{ totalPages }} ページ）</small
+        >
       </div>
       <!-- NoteCardコンポーネントを使用 -->
       <NoteCard
-        v-for="note in sortedNotes"
+        v-for="note in notes"
         :key="note.id"
-        :title="note.title || '無題'"
-        :abstract="note.summary || '概要なし'"
-        :channel="channelsStore.getChannelPathById(note.channel)"
+        :title="extractTitleFromNote(note)"
+        :abstract="extractSummaryFromNote(note)"
+        :channel="getChannelDisplayName(note.channel)"
         :date="formatDate(note.updatedAt)"
         @click="goToNoteDetail(note.id)"
       />
+    </div>
+
+    <!-- ページネーション -->
+    <div v-if="!loading && !error && totalPages > 1" class="pagination">
+      <button @click="goToPreviousPage" :disabled="!hasPreviousPage" class="pagination-btn">
+        ← 前のページ
+      </button>
+      <span class="pagination-info"> {{ currentPage }} / {{ totalPages }} ページ </span>
+      <button @click="goToNextPage" :disabled="!hasNextPage" class="pagination-btn">
+        次のページ →
+      </button>
     </div>
   </div>
 </template>
@@ -113,15 +127,21 @@ import { useRouter } from 'vue-router';
 import { useNotesStore } from '@/stores/notes';
 import { useChannelsStore } from '@/stores/channels';
 import { storeToRefs } from 'pinia';
-import type { UUID } from '@/types/api';
+import type { UUID, NoteSummary } from '@/types/api';
 import NoteCard from '@/components/features/notes/NoteCard.vue'; // NoteCardをインポート
+import { extractTitle, extractSummary } from '@/utils/textExtraction';
 
 // --- StoresとRouterのセットアップ ---
 const router = useRouter();
 const notesStore = useNotesStore();
 const channelsStore = useChannelsStore();
-const { notes, loading, error } = storeToRefs(notesStore);
+const { notes, total, loading, error } = storeToRefs(notesStore);
 const { channels } = storeToRefs(channelsStore);
+
+// ストアのtotalが更新されたらtotalItemsも更新
+watch(total, (newTotal) => {
+  totalItems.value = newTotal;
+});
 
 // --- 検索・フィルタリング条件 ---
 const searchChannelName = ref('');
@@ -132,13 +152,21 @@ const searchKeywords = ref('');
 const showChannelDropdown = ref(false);
 const searchDebounceTimer = ref<number | null>(null);
 
+// --- ページネーション ---
+const currentPage = ref(1);
+const itemsPerPage = 20;
+const totalItems = ref(0);
+
 // --- ソート条件 ---
-type SortKey = 'date' | 'title';
-type SortOrder = 'asc' | 'desc';
-const sortKey = ref<SortKey>('date');
-const sortOrder = ref<SortOrder>('desc');
+type SortKey = 'dateAsc' | 'dateDesc' | 'titleAsc' | 'titleDesc';
+const sortKey = ref<SortKey>('dateDesc');
 
 // --- Computed Properties ---
+
+// ページネーション関連
+const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage));
+const hasNextPage = computed(() => currentPage.value < totalPages.value);
+const hasPreviousPage = computed(() => currentPage.value > 1);
 
 // チャンネル入力の候補リストをフィルタリング
 const filteredChannels = computed(() => {
@@ -216,28 +244,6 @@ const filteredChannels = computed(() => {
     .slice(0, 8); // さらに制限を減らして8件に
 });
 
-// クライアントサイドでソートされたノートリスト (APIソートが効かない場合のフォールバック)
-const sortedNotes = computed(() => {
-  // notes.valueが配列でない場合の安全チェック
-  if (!notes.value || !Array.isArray(notes.value)) {
-    return [];
-  }
-
-  // APIから既にソートされたデータが来る想定だが、念のためクライアントサイドでも軽くソート
-  return [...notes.value].sort((a, b) => {
-    // undefinedチェックを追加
-    if (!a.title || !b.title) return 0;
-
-    if (sortKey.value === 'title') {
-      const result = (a.title || '').localeCompare(b.title || '');
-      return sortOrder.value === 'asc' ? result : -result;
-    }
-    // デフォルトは日付順 (updatedAt)
-    const result = (b.updatedAt || 0) - (a.updatedAt || 0); // 降順がデフォルト
-    return sortOrder.value === 'asc' ? -result : result;
-  });
-});
-
 // --- Watchers ---
 
 // チャンネル検索のdebounce処理
@@ -264,21 +270,30 @@ watch(debouncedSearchChannelName, (newName) => {
   selectedChannelId.value = foundChannel?.id;
 });
 
+// 検索条件が変更された時は1ページ目に戻す
+watch([selectedChannelId, includeChildChannels, searchKeywords], () => {
+  resetToFirstPage();
+});
+
 // --- Methods ---
 
 // 検索を実行する
 const executeSearch = () => {
+  const offset = (currentPage.value - 1) * itemsPerPage;
   notesStore.fetchNotes({
     channel: selectedChannelId.value,
-    'include-child': selectedChannelId.value ? includeChildChannels.value : undefined,
+    includeChild: selectedChannelId.value ? includeChildChannels.value : undefined, // ハイフン削除
     // API仕様ではtitleとbodyのOR検索がないため、titleでフィルタリング
     title: searchKeywords.value || undefined,
-    sortkey: sortKey.value, // ソートキーをAPIに渡す
+    sortkey: sortKey.value, // バックエンド仕様に合致するsortkeyを送信
+    limit: itemsPerPage,
+    offset: offset,
   });
 };
 
 // 検索ボタンクリック時のハンドラ
 const onSearch = () => {
+  resetToFirstPage();
   executeSearch();
 };
 
@@ -293,24 +308,80 @@ const goToNoteDetail = (noteId: UUID) => {
 };
 
 // ソートキーと順序を切り替える
-const toggleSort = (key: SortKey) => {
-  if (sortKey.value === key) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+const toggleSort = (key: 'date' | 'title') => {
+  if (key === 'date') {
+    // 日付ソートの場合: dateDesc → dateAsc → dateDesc
+    sortKey.value = sortKey.value === 'dateDesc' ? 'dateAsc' : 'dateDesc';
   } else {
-    sortKey.value = key;
-    sortOrder.value = key === 'date' ? 'desc' : 'asc';
+    // タイトルソートの場合: titleAsc → titleDesc → titleAsc
+    sortKey.value = sortKey.value === 'titleAsc' ? 'titleDesc' : 'titleAsc';
   }
+  // ソート変更時は1ページ目に戻す
+  currentPage.value = 1;
   // ソート変更時に再検索を実行
   executeSearch();
 };
 
+// ページネーション関数
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page;
+    executeSearch();
+  }
+};
+
+const goToNextPage = () => {
+  if (hasNextPage.value) {
+    goToPage(currentPage.value + 1);
+  }
+};
+
+const goToPreviousPage = () => {
+  if (hasPreviousPage.value) {
+    goToPage(currentPage.value - 1);
+  }
+};
+
+// 検索条件が変更された時は1ページ目に戻す
+const resetToFirstPage = () => {
+  currentPage.value = 1;
+};
+
 // 日付を YYYY/MM/DD 形式にフォーマット
 const formatDate = (timestamp: number) => {
+  timestamp *= 1000; // APIからのタイムスタンプは秒単位なのでミリ秒に変換
   const d = new Date(timestamp);
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
-  return `${y}/${m}/${day}`;
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const seconds = String(d.getSeconds()).padStart(2, '0');
+  return `${y}/${m}/${day} ${hours}:${minutes}:${seconds}`;
+};
+
+// ノートからタイトルを抽出
+const extractTitleFromNote = (note: NoteSummary) => {
+  const title = note.title || '無題';
+  // textExtraction.tsのextractTitle関数を使用してMarkdown記号を適切に削除
+  return extractTitle(title);
+};
+
+// ノートから要約を抽出
+const extractSummaryFromNote = (note: NoteSummary) => {
+  const summary = note.summary || '概要なし';
+  // textExtraction.tsのextractSummary関数を使用してMarkdown記号を適切に削除
+  return extractSummary(summary);
+};
+
+// チャンネルIDからチャンネル表示名を取得
+const getChannelDisplayName = (channelId: UUID | undefined): string => {
+  if (!channelId || !channels.value || !Array.isArray(channels.value)) {
+    return '';
+  }
+
+  const channel = channels.value.find((c) => c.id === channelId);
+  return channel ? channel.path : '';
 };
 
 // チャンネルドロップダウン関連メソッド
@@ -702,6 +773,53 @@ button:disabled {
   border: 1px solid #abd9ae;
 }
 
+/* --- ページネーション --- */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 1px solid #3f8d44;
+  border-radius: 8px;
+  background-color: #abd9ae;
+  color: #1c5253;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #9dd0a1;
+  transform: translateY(-2px);
+}
+
+.pagination-btn:disabled {
+  background-color: #e9ecef;
+  border-color: #ddd;
+  color: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pagination-info {
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  color: #1c5253;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 /* --- レスポンシブ対応 --- */
 @media (max-width: 768px) {
   .note-list-view {
@@ -745,6 +863,17 @@ button:disabled {
 
   .sort-bar {
     flex-wrap: wrap;
+    padding: 0.75rem;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .pagination-btn {
+    width: 100%;
     padding: 0.75rem;
   }
 }

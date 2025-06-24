@@ -25,9 +25,9 @@ defineProps<{
 .note-card {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between; /* コンテンツとフッターを適切に配置 */
   align-items: flex-start;
-  gap: 8px;
+  gap: 12px; /* コンテンツとフッターの間の間隔を増やす */
   padding: 15px 40px;
   height: 175px;
   border: 1px solid #000;
@@ -49,7 +49,8 @@ defineProps<{
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start; /* 上寄せに変更 */
+  gap: 8px; /* タイトルと抽象の間に間隔を設ける */
   width: 100%;
   overflow: hidden;
 }
@@ -90,21 +91,37 @@ defineProps<{
 /* --- フッターコンテナ --- */
 .note-card-footer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   align-self: stretch;
   color: #666;
   font-family: inherit; /* 親から継承 */
-  font-size: 16px;
+  font-size: 14px;
   font-style: normal;
   font-weight: 400;
-  line-height: normal;
+  line-height: 1.4; /* 文字の欠けを防ぐため行の高さを調整 */
+  gap: 6px; /* チャンネル名と日付の間の縦の間隔を少し増やす */
+}
+
+/* --- チャンネル名 --- */
+.note-channel {
+  color: #3f8d44; /* チャンネル名を少し目立たせる */
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.4; /* 文字の欠けを防ぐため行の高さを調整 */
 }
 
 /* --- 日付表示 --- */
 .note-date {
-  text-align: right;
-  /* スタイルはフッターから継承 */
+  color: #888;
+  font-size: 13px;
+  white-space: nowrap;
+  align-self: flex-end; /* 日付を右端に配置 */
+  line-height: 1.4; /* チャンネル名と統一 */
 }
 
 /* --- レスポンシブ対応 --- */
@@ -113,13 +130,22 @@ defineProps<{
     padding: 15px 20px;
     height: auto;
     min-height: 150px;
+    gap: 10px;
   }
   .note-title {
     font-size: 20px;
   }
-  .note-abstract,
-  .note-card-footer {
+  .note-abstract {
     font-size: 14px;
+  }
+  .note-card-footer {
+    font-size: 13px;
+  }
+  .note-channel {
+    font-size: 13px;
+  }
+  .note-date {
+    font-size: 12px;
   }
 }
 </style>

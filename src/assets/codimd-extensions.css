@@ -1,0 +1,405 @@
+/* CodiMD風の拡張Markdownスタイル */
+
+/* 警告ボックス */
+.alert {
+  padding: 1rem;
+  margin: 1rem 0;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.alert-success {
+  color: #0f5132;
+  background-color: #d1e7dd;
+  border-color: #badbcc;
+}
+
+.alert-info {
+  color: #055160;
+  background-color: #cff4fc;
+  border-color: #b8daff;
+}
+
+.alert-warning {
+  color: #664d03;
+  background-color: #fff3cd;
+  border-color: #ffecb5;
+}
+
+.alert-danger {
+  color: #842029;
+  background-color: #f8d7da;
+  border-color: #f5c2c7;
+}
+
+.alert-icon::before {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.alert-success .alert-icon::before {
+  content: '✅';
+}
+
+.alert-info .alert-icon::before {
+  content: 'ℹ️';
+}
+
+.alert-warning .alert-icon::before {
+  content: '⚠️';
+}
+
+.alert-danger .alert-icon::before {
+  content: '❌';
+}
+
+.alert-content {
+  flex: 1;
+}
+
+.alert-content > *:first-child {
+  margin-top: 0;
+}
+
+.alert-content > *:last-child {
+  margin-bottom: 0;
+}
+
+/* タスクリスト */
+.task-list-item {
+  list-style: none;
+  margin: 0.5rem 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.task-list-item-checkbox {
+  margin: 0;
+  margin-top: 0.2rem;
+  cursor: pointer;
+}
+
+.task-list-item.checked {
+  opacity: 0.7;
+}
+
+.task-list-item.checked > * {
+  text-decoration: line-through;
+}
+
+/* 行番号付きコードブロック */
+.line-number {
+  display: block;
+  position: relative;
+  padding-left: 3rem;
+}
+
+.line-number::before {
+  content: attr(data-line);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2.5rem;
+  text-align: right;
+  color: #666;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+/* 数式スタイル */
+.katex-inline {
+  display: inline;
+  color: #d63384;
+  font-family: 'KaTeX_Math', 'Times New Roman', serif;
+}
+
+.katex-block {
+  display: block;
+  text-align: center;
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 0.375rem;
+  overflow-x: auto;
+}
+
+/* テーブル拡張 */
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: collapse;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+  background-color: #f8f9fa;
+}
+
+/* マーク（ハイライト）テキスト */
+mark {
+  background-color: #fff3cd;
+  padding: 0.1em 0.2em;
+  border-radius: 0.2em;
+}
+
+/* 上付き・下付き文字 */
+sup {
+  font-size: 0.75em;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+  top: -0.5em;
+}
+
+sub {
+  font-size: 0.75em;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+  bottom: -0.25em;
+}
+
+/* 取り消し線 */
+del,
+s {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* 挿入テキスト */
+ins {
+  text-decoration: underline;
+  background-color: #d1ecf1;
+  padding: 0.1em 0.2em;
+  border-radius: 0.2em;
+}
+
+/* 脚注 */
+.footnote-ref {
+  font-size: 0.8em;
+  vertical-align: super;
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.footnote-ref:hover {
+  text-decoration: underline;
+}
+
+.footnotes {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+  font-size: 0.9rem;
+}
+
+.footnotes ol {
+  padding-left: 1.5rem;
+}
+
+.footnotes li {
+  margin: 0.5rem 0;
+}
+
+/* 定義リスト */
+dl {
+  margin: 1rem 0;
+}
+
+dt {
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+dd {
+  margin-left: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* 略語 */
+abbr[title] {
+  border-bottom: 1px dotted #666;
+  cursor: help;
+  text-decoration: none;
+}
+
+/* 埋め込みコンテンツ */
+.embed-responsive {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.embed-responsive::before {
+  display: block;
+  content: '';
+}
+
+.embed-responsive-16by9::before {
+  padding-top: 56.25%; /* 16:9 aspect ratio */
+}
+
+.embed-responsive-item {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ToC スタイル */
+.toc {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.toc h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 0.5rem;
+}
+
+.toc ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.toc ul ul {
+  padding-left: 1rem;
+  margin-top: 0.25rem;
+}
+
+.toc li {
+  margin: 0.25rem 0;
+}
+
+.toc a {
+  color: #495057;
+  text-decoration: none;
+  display: block;
+  padding: 0.25rem 0;
+  border-radius: 0.25rem;
+  transition: all 0.15s ease-in-out;
+}
+
+.toc a:hover {
+  background-color: #e9ecef;
+  color: #212529;
+  text-decoration: none;
+  padding-left: 0.5rem;
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .alert-success {
+    color: #75b798;
+    background-color: #051b11;
+    border-color: #0f3928;
+  }
+
+  .alert-info {
+    color: #6ea8fe;
+    background-color: #031633;
+    border-color: #084298;
+  }
+
+  .alert-warning {
+    color: #ffda6a;
+    background-color: #332701;
+    border-color: #664d03;
+  }
+
+  .alert-danger {
+    color: #ea868f;
+    background-color: #2c0b0e;
+    border-color: #842029;
+  }
+
+  .katex-block {
+    background-color: #2d3436;
+    color: #ddd;
+  }
+
+  .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .table th {
+    background-color: #2d3436;
+    color: #fff;
+  }
+
+  .table th,
+  .table td {
+    border-color: #495057;
+  }
+
+  .toc {
+    background-color: #2d3436;
+    border-color: #495057;
+    color: #fff;
+  }
+
+  .toc h2 {
+    border-color: #495057;
+    color: #fff;
+  }
+
+  .toc a {
+    color: #adb5bd;
+  }
+
+  .toc a:hover {
+    background-color: #495057;
+    color: #fff;
+  }
+
+  .footnotes {
+    border-color: #495057;
+  }
+
+  mark {
+    background-color: #664d03;
+    color: #fff;
+  }
+
+  ins {
+    background-color: #084298;
+    color: #fff;
+  }
+}

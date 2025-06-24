@@ -34,11 +34,11 @@ export interface UserSettings {
 // GET /notes
 export interface GetNotesRequestParams {
   channel?: UUID;
-  'include-child'?: boolean;
+  includeChild?: boolean; // ハイフンを削除
   tag?: string;
   title?: string;
   body?: string;
-  sortkey?: 'date' | 'title';
+  sortkey?: 'dateAsc' | 'dateDesc' | 'titleAsc' | 'titleDesc'; // バックエンド仕様に合わせる
   limit?: number;
   offset?: number;
 }

@@ -14,7 +14,11 @@
         </div>
       </div>
       <h1 class="note-title">{{ displayedTitle }}</h1>
-      <div class="note-body" v-html="renderedMarkdown"></div>
+      <div
+        ref="markdownContainer"
+        class="note-body prose prose-lg markdown-content markdown-body"
+        v-html="renderedMarkdown"
+      ></div>
     </div>
     <div v-else>
       <p>読み込み中またはエラー</p>
@@ -23,20 +27,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
+import { computed, onMounted, ref, nextTick, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useNotesStore } from '@/stores/notes';
+import { AdvancedMarkdownRenderer } from '@/utils/advancedMarkdown';
+import { extractTitle } from '@/utils/textExtraction';
 
 const router = useRouter();
 const route = useRoute();
+const markdownContainer = ref<HTMLElement>();
 
 const goToHome = () => {
   router.push({ name: 'home' });
 };
 
-const currentNoteId = Array.isArray(route.params.noteId) ? route.params.noteId[0] : route.params.noteId;
+const currentNoteId = Array.isArray(route.params.noteId)
+  ? route.params.noteId[0]
+  : route.params.noteId;
 const gotoNoteEdit = () => {
   if (currentNoteId) {
     router.push({ name: 'note-edit', params: { noteId: currentNoteId } });
@@ -44,31 +51,60 @@ const gotoNoteEdit = () => {
 };
 
 const notesStore = useNotesStore();
-const note = computed(() => notesStore.currentNote)
+const note = computed(() => notesStore.currentNote);
 
-const renderedMarkdown = computed(() => {
+// 高度なMarkdownレンダラーのインスタンス
+const markdownRenderer = new AdvancedMarkdownRenderer();
+
+const renderedMarkdown = ref('');
+
+// Markdownをレンダリングする関数
+const renderMarkdown = async () => {
   if (!note.value || !note.value.body) {
-    return '';
+    renderedMarkdown.value = '';
+    return;
   }
-  // markedでMarkdownをHTMLに変換し、DOMPurifyでサニタイズする
-  const rawHtml = marked(note.value.body) as string;
-  return DOMPurify.sanitize(rawHtml);
-});
+
+  try {
+    // 基本的なレンダリング
+    const html = markdownRenderer.renderFull(note.value.body);
+    renderedMarkdown.value = html;
+
+    // DOM更新後にMermaid図表をレンダリング
+    await nextTick();
+    if (markdownContainer.value) {
+      await markdownRenderer.renderMermaidDiagrams(markdownContainer.value);
+    }
+  } catch (error) {
+    console.error('Markdown rendering error:', error);
+    renderedMarkdown.value = '<p>Markdown rendering error</p>';
+  }
+};
 
 //本分の一行目をタイトルとする
 const displayedTitle = computed(() => {
   if (note.value && typeof note.value.body === 'string' && note.value.body.length > 0) {
-    const lines = note.value.body.split(/\r?\n/);
-    return lines[0]; // 最初の行をタイトルとする
+    // textExtraction.tsのextractTitle関数を使用してMarkdown記号を適切に削除
+    return extractTitle(note.value.body);
   }
   return '無題のノート'; //デフォルトタイトル
 });
 
-onMounted(() => {
+// ノートの内容が変更されたときにレンダリング
+watch(
+  note,
+  () => {
+    renderMarkdown();
+  },
+  { immediate: true }
+);
+
+onMounted(async () => {
   if (currentNoteId) {
-    notesStore.fetchNoteById(currentNoteId);
+    await notesStore.fetchNoteById(currentNoteId);
+    await renderMarkdown();
   }
-})
+});
 </script>
 
 <style scoped>
@@ -126,36 +162,44 @@ onMounted(() => {
   margin-bottom: 1.5rem;
 }
 
-.note-body {
-  line-height: 1.7;
+/* Markdown コンテンツの基本設定のみ */
+.markdown-content {
   font-size: 1.1rem;
 }
 
-.note-body :deep(pre) {
-  background-color: #f6f8fa;
-  padding: 1em;
-  border-radius: 6px;
-  border: 1px solid #dfe4ed;
-  overflow-x: auto;
+.markdown-content :deep(table) {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+  margin: 1rem 0;
+  border: 1px solid #ddd;
 }
 
-.note-body :deep(code) {
-  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-  font-size: 0.9em;
-  background-color: #f6f8fa;
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
+.markdown-content :deep(table th),
+.markdown-content :deep(table td) {
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  text-align: left;
 }
 
-.note-body :deep(pre code) {
-  background-color: transparent;
-  padding: 0;
-  border-radius: 0;
+.markdown-content :deep(table th) {
+  background-color: #f8f9fa;
+  font-weight: 600;
 }
 
-.note-body :deep(ul),
-.note-body :deep(ol) {
-  padding-left: 2rem;
+.markdown-content :deep(table tr:nth-child(even)) {
+  background-color: #f8f9fa;
+}
+
+.markdown-content :deep(table tr:hover) {
+  background-color: #e9ecef;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .markdown-content {
+    font-size: 1rem;
+  }
 }
 
 /* --- レスポンシブ対応 --- */
