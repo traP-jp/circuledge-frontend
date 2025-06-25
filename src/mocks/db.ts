@@ -359,9 +359,6 @@ class MockDB {
     return dp;
   }
 
-  /**
-   * SES（Shortest Edit Script）を生成してコンフリクト用の差分テキストを作成
-   */
   generateConflictDiff(serverBody: string, userBody: string): string {
     const serverLines = serverBody.split('\n');
     const userLines = userBody.split('\n');
@@ -372,7 +369,6 @@ class MockDB {
     let i = serverLines.length;
     let j = userLines.length;
 
-    // バックトラックしてSESを構築
     while (i > 0 || j > 0) {
       if (i > 0 && j > 0 && serverLines[i - 1] === userLines[j - 1]) {
         // 共通行は無視
@@ -386,16 +382,6 @@ class MockDB {
         // サーバー側の削除行
         diff.unshift('- ' + serverLines[i - 1]);
         i--;
-      }
-    }
-
-    // 空の場合は簡単なメッセージを追加
-    if (diff.length === 0) {
-      const serverFirstLine = serverLines[0] || '';
-      const userFirstLine = userLines[0] || '';
-      if (serverFirstLine !== userFirstLine) {
-        diff.push('- ' + serverFirstLine);
-        diff.push('+ ' + userFirstLine);
       }
     }
 
