@@ -62,7 +62,6 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useNotesStore } from '@/stores/notes';
-import { updateNote, ConflictError } from '@/api/client';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
@@ -103,22 +102,14 @@ const renderedMarkdown = computed(() => {
  * 保存ボタンがクリックされた時の処理
  */
 const handleSave = async () => {
+  console.log('handleSave: 保存処理開始');
   try {
-    // 現在のノートの情報を取得
-    const currentNote = notesStore.currentNote;
-    if (!currentNote) {
-      console.error('Current note not found');
-      return;
-    }
-
-    // ノートを更新
-    await updateNote(noteId, {
+    // store経由でノートを更新（コンフリクト処理を含む）
+    await notesStore.updateNote(noteId, {
       body: editingNote.value.body,
-      channel: editingNote.value.channel,
-      revision: currentNote.revision,
-      permission: currentNote.permission,
     });
 
+    console.log('handleSave: 更新成功');
     // 編集中のデータをstoreのcurrentNoteに反映
     if (notesStore.currentNote) {
       notesStore.currentNote.body = editingNote.value.body;
@@ -128,11 +119,15 @@ const handleSave = async () => {
     // ノート詳細画面に遷移
     router.push({ name: 'note-view', params: { noteId: noteId } });
   } catch (error) {
-    if (error instanceof ConflictError) {
-      // 編集競合が発生したときは、:noteId/conflict へ遷移
+    console.log('handleSave: エラーをキャッチ', error);
+    console.log('handleSave: conflictInfo:', notesStore.conflictInfo);
+
+    // store経由でエラーハンドリングが行われるので、
+    // コンフリクト情報がある場合はコンフリクト画面に遷移
+    if (notesStore.conflictInfo) {
+      console.log('handleSave: コンフリクト画面に遷移します');
       router.push({ name: 'note-conflict', params: { noteId: noteId } });
     } else {
-      // conflict 以外のエラーはコンソールへ
       console.error('Failed to save note:', error);
     }
   }
@@ -155,6 +150,9 @@ onMounted(async () => {
   if (noteId) {
     // ノート詳細を取得
     await notesStore.fetchNoteById(noteId);
+
+    // 編集開始を記録（editingBaseRevisionを設定）
+    notesStore.startEditing(noteId);
 
     // 取得したノートデータをeditingNoteに設定
     const currentNote = notesStore.currentNote;

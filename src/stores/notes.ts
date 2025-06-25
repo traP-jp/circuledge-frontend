@@ -83,10 +83,16 @@ export const useNotesStore = defineStore('notes', () => {
    * @param id - ノートのUUID
    */
   async function startEditing(id: UUID) {
+    console.log('store startEditing: 開始', { id });
     await fetchNoteById(id);
     if (currentNote.value) {
       // 編集開始時のrevisionを保存
       editingBaseRevision.value = { ...currentNote.value };
+      console.log('store startEditing: editingBaseRevision設定完了', {
+        revision: editingBaseRevision.value.revision,
+      });
+    } else {
+      console.log('store startEditing: currentNoteがnull');
     }
   }
 
@@ -96,8 +102,11 @@ export const useNotesStore = defineStore('notes', () => {
    * @param payload - 更新するデータ (`body` または `permission`)
    */
   async function updateNote(id: UUID, payload: Partial<Pick<NoteRevision, 'body' | 'permission'>>) {
+    console.log('store updateNote: 開始', { id, payload });
+
     if (!currentNote.value?.revision) {
       error.value = '現在のノートのリビジョン情報がありません。';
+      console.log('store updateNote: リビジョン情報なしエラー');
       return;
     }
 
@@ -112,15 +121,21 @@ export const useNotesStore = defineStore('notes', () => {
       body: payload.body ?? currentNote.value.body,
     };
 
+    console.log('store updateNote: リクエストペイロード', requestPayload);
+
     try {
       // updateNoteがストアのアクション名と重複するため、apiUpdateNoteとしてインポート
       await apiUpdateNote(id, requestPayload);
 
+      console.log('store updateNote: API呼び出し成功');
       // 更新が成功したら、最新のノート情報を再取得してローカルの状態を同期するのが最も安全
       await fetchNoteById(id);
       await fetchNotes(); // ノート一覧のサマリーなども更新するため
     } catch (e) {
+      console.log('store updateNote: API呼び出しエラー', e);
+
       if (e instanceof ConflictError) {
+        console.log('store updateNote: ConflictErrorをキャッチ', e.data);
         error.value = `${e.message} サーバー上の最新のノート内容を確認してください。`;
         // 409レスポンスのデータを使用してコンフリクト情報を構築
         if (editingBaseRevision.value) {
@@ -135,13 +150,19 @@ export const useNotesStore = defineStore('notes', () => {
             diff: e.data.diff || '',
             noteId: id,
           };
+          console.log('store updateNote: conflictInfo設定完了', conflictInfo.value);
         } else {
           error.value = '編集開始時の情報が不足しているため、コンフリクト解決ができません。';
+          console.log('store updateNote: editingBaseRevision不足');
         }
+        // ConflictErrorを再スローして、呼び出し元がキャッチできるようにする
+        throw e;
       } else if (e instanceof Error) {
         error.value = e.message;
+        throw e;
       } else {
         error.value = `Failed to update note ${id}`;
+        throw new Error(`Failed to update note ${id}`);
       }
     } finally {
       loading.value = false;
