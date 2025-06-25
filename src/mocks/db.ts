@@ -334,44 +334,72 @@ class MockDB {
     return newNote;
   }
 
-  /**
-   * 指定されたチャンネルがコンフリクトテスト用チャンネルかどうかを判定
-   */
   isConflictTestChannel(channelId: UUID): boolean {
     const channel = this.channels.get(channelId);
     return channel?.path === 'test/conflict';
   }
 
+  private computeLCS(a: string[], b: string[]): number[][] {
+    const m = a.length;
+    const n = b.length;
+    const dp = Array(m + 1)
+      .fill(null)
+      .map(() => Array(n + 1).fill(0));
+
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        if (a[i - 1] === b[j - 1]) {
+          dp[i][j] = dp[i - 1][j - 1] + 1;
+        } else {
+          dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        }
+      }
+    }
+
+    return dp;
+  }
+
   /**
-   * コンフリクト用の差分テキストを生成
-   * APIの仕様に合わせて + (追加行) と - (削除行) の形式で生成
+   * SES（Shortest Edit Script）を生成してコンフリクト用の差分テキストを作成
    */
   generateConflictDiff(serverBody: string, userBody: string): string {
     const serverLines = serverBody.split('\n');
     const userLines = userBody.split('\n');
 
-    let diff = '';
+    const lcsTable = this.computeLCS(serverLines, userLines);
 
-    // サーバー側の内容（削除される内容）
-    serverLines.forEach((line) => {
-      if (!userLines.includes(line)) {
-        diff += '- ' + line + '\n';
+    const diff: string[] = [];
+    let i = serverLines.length;
+    let j = userLines.length;
+
+    // バックトラックしてSESを構築
+    while (i > 0 || j > 0) {
+      if (i > 0 && j > 0 && serverLines[i - 1] === userLines[j - 1]) {
+        // 共通行は無視
+        i--;
+        j--;
+      } else if (j > 0 && (i === 0 || lcsTable[i][j - 1] >= lcsTable[i - 1][j])) {
+        // ユーザー側の追加行
+        diff.unshift('+ ' + userLines[j - 1]);
+        j--;
+      } else if (i > 0) {
+        // サーバー側の削除行
+        diff.unshift('- ' + serverLines[i - 1]);
+        i--;
       }
-    });
-
-    // ユーザー側の内容（追加される内容）
-    userLines.forEach((line) => {
-      if (!serverLines.includes(line)) {
-        diff += '+ ' + line + '\n';
-      }
-    });
-
-    // 空の場合は簡単なメッセージを追加
-    if (diff === '') {
-      diff = '+ ' + userBody.split('\n')[0] + '\n- ' + serverBody.split('\n')[0];
     }
 
-    return diff.trim();
+    // 空の場合は簡単なメッセージを追加
+    if (diff.length === 0) {
+      const serverFirstLine = serverLines[0] || '';
+      const userFirstLine = userLines[0] || '';
+      if (serverFirstLine !== userFirstLine) {
+        diff.push('- ' + serverFirstLine);
+        diff.push('+ ' + userFirstLine);
+      }
+    }
+
+    return diff.join('\n');
   }
 
   updateNote(id: UUID, update: Partial<Omit<DbNote, 'id' | 'revision'>>): DbNote | undefined {
