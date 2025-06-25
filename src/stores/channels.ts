@@ -15,7 +15,8 @@ export const useChannelsStore = defineStore('channels', () => {
     loading.value = true;
     error.value = null;
     try {
-      channels.value = await getChannels();
+      const channelsResponse = await getChannels();
+      channels.value = channelsResponse.sort((a, b) => a.path.localeCompare(b.path));
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to fetch channels';
     } finally {
@@ -29,6 +30,15 @@ export const useChannelsStore = defineStore('channels', () => {
    */
   function getChannelById(channelId: UUID): Channel | undefined {
     return channels.value.find((channel) => channel.id === channelId);
+  }
+
+  /**
+   * チャンネルIDからチャンネルパスを取得する
+   * @param channelId - チャンネルのUUID
+   */
+  function getChannelPathById(channelId: UUID): string {
+    const channel = channels.value.find((channel) => channel.id === channelId);
+    return channel?.path || '';
   }
 
   /**
@@ -122,6 +132,7 @@ export const useChannelsStore = defineStore('channels', () => {
     channelTree,
     fetchChannels,
     getChannelById,
+    getChannelPathById,
     getChannelByPath,
     searchChannels,
     getChildChannels,

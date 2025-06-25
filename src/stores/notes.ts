@@ -1,7 +1,21 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import type { NoteSummary, NoteRevision, UUID, PutNoteRequest, NotePermission } from '@/types/api';
-import { getNotes, getNote, updateNote as apiUpdateNote, ConflictError } from '@/api/client';
+import type {
+  NoteSummary,
+  NoteRevision,
+  UUID,
+  PutNoteRequest,
+  NotePermission,
+  GetNotesRequestParams,
+} from '@/types/api';
+import {
+  getNotes,
+  getNote,
+  updateNote as apiUpdateNote,
+  createNote,
+  ConflictError,
+} from '@/api/client';
+import type { Router } from 'vue-router';
 
 /** ストア内で使用するコンフリクト情報の型 */
 interface ConflictInfo {
@@ -34,11 +48,11 @@ export const useNotesStore = defineStore('notes', () => {
   /**
    * ノートの一覧を取得する
    */
-  async function fetchNotes() {
+  async function fetchNotes(params: GetNotesRequestParams = {}) {
     loading.value = true;
     error.value = null;
     try {
-      const response = await getNotes(); // apiClient.getNotes() -> getNotes()
+      const response = await getNotes(params); // パラメータを渡す
       notes.value = response.notes;
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to fetch notes';
@@ -108,7 +122,6 @@ export const useNotesStore = defineStore('notes', () => {
     } catch (e) {
       if (e instanceof ConflictError) {
         error.value = `${e.message} サーバー上の最新のノート内容を確認してください。`;
-
         // 409レスポンスのデータを使用してコンフリクト情報を構築
         if (editingBaseRevision.value) {
           conflictInfo.value = {
@@ -145,14 +158,31 @@ export const useNotesStore = defineStore('notes', () => {
   }
 
   /**
+   * 新規ノートを作成し、編集ページに遷移する
+   */
+  async function createNoteAndNavigate(router: Router) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const response = await createNote();
+      // 作成したノートの編集ページに遷移
+      router.push(`/notes/${response.id}/edit`);
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to create note';
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
    * ストアの状態をリセットする
    */
   function $reset() {
     notes.value = [];
     currentNote.value = null;
-    editingBaseRevision.value = null;
     loading.value = false;
     error.value = null;
+    editingBaseRevision.value = null;
     conflictInfo.value = null;
   }
 
@@ -167,6 +197,7 @@ export const useNotesStore = defineStore('notes', () => {
     startEditing,
     updateNote,
     clearConflictInfo,
+    createNoteAndNavigate,
     $reset,
   };
 });
