@@ -65,6 +65,13 @@ import { useNotesStore } from '@/stores/notes';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
+// 開発環境でのみデバッグログを出力するヘルパー関数
+const debugLog = (message: string, ...args: unknown[]) => {
+  if (import.meta.env.DEV) {
+    console.log(message, ...args);
+  }
+};
+
 const route = useRoute();
 const router = useRouter();
 const notesStore = useNotesStore();
@@ -74,7 +81,7 @@ const notesStore = useNotesStore();
  * 現時点では `uuid-1` と `uuid-2`
  */
 const noteId = route.params.noteId as string;
-console.log(noteId);
+debugLog('noteId:', noteId);
 
 /**
  * 編集中のノートデータ
@@ -102,14 +109,14 @@ const renderedMarkdown = computed(() => {
  * 保存ボタンがクリックされた時の処理
  */
 const handleSave = async () => {
-  console.log('handleSave: 保存処理開始');
+  debugLog('handleSave: 保存処理開始');
   try {
     // store経由でノートを更新（コンフリクト処理を含む）
     await notesStore.updateNote(noteId, {
       body: editingNote.value.body,
     });
 
-    console.log('handleSave: 更新成功');
+    debugLog('handleSave: 更新成功');
     // 編集中のデータをstoreのcurrentNoteに反映
     if (notesStore.currentNote) {
       notesStore.currentNote.body = editingNote.value.body;
@@ -119,14 +126,19 @@ const handleSave = async () => {
     // ノート詳細画面に遷移
     router.push({ name: 'note-view', params: { noteId: noteId } });
   } catch (error) {
-    console.log('handleSave: エラーをキャッチ', error);
-    console.log('handleSave: conflictInfo:', notesStore.conflictInfo);
+    debugLog('handleSave: エラーをキャッチ', error);
+    debugLog('handleSave: conflictInfo:', notesStore.conflictInfo);
 
     // store経由でエラーハンドリングが行われるので、
     // コンフリクト情報がある場合はコンフリクト画面に遷移
     if (notesStore.conflictInfo) {
-      console.log('handleSave: コンフリクト画面に遷移します');
+      debugLog('handleSave: コンフリクト画面に遷移します');
       router.push({ name: 'note-conflict', params: { noteId: noteId } });
+      // コンフリクト画面への遷移後、古い情報を残さないようにリセット
+      // 注意: 遷移先でconflictInfoが使用されるため、少し遅延してリセット
+      setTimeout(() => {
+        notesStore.clearConflictInfo();
+      }, 100);
     } else {
       console.error('Failed to save note:', error);
     }
@@ -161,11 +173,6 @@ onMounted(async () => {
       editingNote.value.channel = currentNote.channel || '';
       // タグの実装は後回し
       editingNote.value.tags = '';
-
-      // ちゃんと取得できているか確認
-      // console.log('editingNote.body updated:', editingNote.value.body);
-      // console.log('editingNote.channel updated:', editingNote.value.channel);
-      // console.log('editingNote.tags updated:', editingNote.value.tags);
     }
   }
 });

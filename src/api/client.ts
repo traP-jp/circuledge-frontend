@@ -15,6 +15,13 @@ import type {
   PutUserSettingsRequest,
 } from '../types/api';
 
+// 開発環境でのみデバッグログを出力するヘルパー関数
+const debugLog = (message: string, ...args: unknown[]) => {
+  if (import.meta.env.DEV) {
+    console.log(message, ...args);
+  }
+};
+
 const API_BASE_URL =
   import.meta.env.VITE_ENABLE_MOCKS === 'true'
     ? '/api'
@@ -57,7 +64,7 @@ async function apiFetch(path: string, options: RequestInit = {}): Promise<Respon
   }
 
   const url = `${API_BASE_URL}${path}`;
-  console.log(`API Request: ${options.method || 'GET'} ${url}`);
+  debugLog(`API Request: ${options.method || 'GET'} ${url}`);
 
   const response = await fetch(url, {
     ...options,
@@ -65,7 +72,7 @@ async function apiFetch(path: string, options: RequestInit = {}): Promise<Respon
   });
 
   // レスポンスの詳細をログ出力
-  console.log(`API Response: ${response.status} ${response.statusText}`);
+  debugLog(`API Response: ${response.status} ${response.statusText}`);
 
   return response;
 }

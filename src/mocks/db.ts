@@ -339,13 +339,21 @@ class MockDB {
     return channel?.path === 'test/conflict';
   }
 
+  /**
+   * LCS（Longest Common Subsequence）を DP で計算
+   * @param a - 比較対象の文字列配列1（サーバー側の行）
+   * @param b - 比較対象の文字列配列2（ユーザー側の行）
+   * @returns LCSテーブル（dp[i][j] = a[0..i-1]とb[0..j-1]のLCSの長さ）
+   */
   private computeLCS(a: string[], b: string[]): number[][] {
     const m = a.length;
     const n = b.length;
+    // dp[i][j]はa[0..i-1]とb[0..j-1]の最長共通部分列の長さを表す
     const dp = Array(m + 1)
       .fill(null)
       .map(() => Array(n + 1).fill(0));
 
+    // DP でLCSテーブルを構築
     for (let i = 1; i <= m; i++) {
       for (let j = 1; j <= n; j++) {
         if (a[i - 1] === b[j - 1]) {
@@ -359,29 +367,49 @@ class MockDB {
     return dp;
   }
 
+  /**
+   * SES（Shortest Edit Script）を生成してコンフリクト用の差分テキストを作成
+   * LCSアルゴリズムを利用してより精密な差分を生成
+   * @param serverBody - サーバー側のテキスト
+   * @param userBody - ユーザー側のテキスト
+   * @returns unified diff形式の差分文字列（+ 追加行、- 削除行）
+   */
   generateConflictDiff(serverBody: string, userBody: string): string {
     const serverLines = serverBody.split('\n');
     const userLines = userBody.split('\n');
 
+    // LCSテーブルを計算
     const lcsTable = this.computeLCS(serverLines, userLines);
 
+    // SES（最短編集スクリプト）を生成
     const diff: string[] = [];
     let i = serverLines.length;
     let j = userLines.length;
 
+    // LCSテーブルをバックトラックして編集操作を特定
     while (i > 0 || j > 0) {
       if (i > 0 && j > 0 && serverLines[i - 1] === userLines[j - 1]) {
-        // 共通行は無視
+        // 共通行：何もしない（差分に含めない）
         i--;
         j--;
       } else if (j > 0 && (i === 0 || lcsTable[i][j - 1] >= lcsTable[i - 1][j])) {
-        // ユーザー側の追加行
+        // ユーザー側の追加行：+ プレフィックスを付ける
         diff.unshift('+ ' + userLines[j - 1]);
         j--;
       } else if (i > 0) {
-        // サーバー側の削除行
+        // サーバー側の削除行：- プレフィックスを付ける
         diff.unshift('- ' + serverLines[i - 1]);
         i--;
+      }
+    }
+
+    // 差分が空の場合でも最低限の差分を生成
+    if (diff.length === 0) {
+      const serverFirstLine = serverLines[0] || '';
+      const userFirstLine = userLines[0] || '';
+      if (serverFirstLine !== userFirstLine) {
+        diff.push('- ' + serverFirstLine);
+        diff.push('+ ' + userFirstLine);
       }
     }
 
