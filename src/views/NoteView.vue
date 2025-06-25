@@ -36,7 +36,9 @@ const goToHome = () => {
   router.push({ name: 'home' });
 };
 
-const currentNoteId = Array.isArray(route.params.noteId) ? route.params.noteId[0] : route.params.noteId;
+const currentNoteId = Array.isArray(route.params.noteId)
+  ? route.params.noteId[0]
+  : route.params.noteId;
 const gotoNoteEdit = () => {
   if (currentNoteId) {
     router.push({ name: 'note-edit', params: { noteId: currentNoteId } });
@@ -44,7 +46,7 @@ const gotoNoteEdit = () => {
 };
 
 const notesStore = useNotesStore();
-const note = computed(() => notesStore.currentNote)
+const note = computed(() => notesStore.currentNote);
 
 const renderedMarkdown = computed(() => {
   if (!note.value || !note.value.body) {
@@ -68,7 +70,7 @@ onMounted(() => {
   if (currentNoteId) {
     notesStore.fetchNoteById(currentNoteId);
   }
-})
+});
 </script>
 
 <style scoped>
