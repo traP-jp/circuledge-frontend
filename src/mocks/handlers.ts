@@ -72,16 +72,45 @@ export const handlers = [
       return new HttpResponse(null, { status: 404 });
     }
 
+    // コンフリクトテスト用チャンネルの場合、常にコンフリクトを発生させる
+    if (db.isConflictTestChannel(currentNote.channel)) {
+      // サーバー上の内容を少し変更してコンフリクトを再現
+      const simulatedServerContent =
+        currentNote.body +
+        '\n\n## サーバー上で他のユーザーによって追加された内容\n\n同時編集により、この内容が追加されました。';
+
+      // 新しいリビジョンIDを生成（サーバー上で変更されたことを示す）
+      const latestRevision = crypto.randomUUID();
+
+      // サーバー上のノートを更新（他のユーザーの編集をシミュレート）
+      db.updateNote(noteId, {
+        body: simulatedServerContent,
+      });
+
+      // 更新後のノートを取得して最新リビジョンを取得
+      const updatedNote = db.getNote(noteId);
+
+      const response: PutNoteConflictResponse = {
+        'latest-revision': updatedNote?.revision || latestRevision,
+        channel: currentNote.channel,
+        permission: currentNote.permission as NotePermission,
+        diff: db.generateConflictDiff(simulatedServerContent, requestBody.body),
+      };
+      return HttpResponse.json(response, { status: 409 });
+    }
+
+    // 通常のリビジョンチェック
     if (currentNote.revision !== requestBody.revision) {
       const response: PutNoteConflictResponse = {
         'latest-revision': currentNote.revision,
         channel: currentNote.channel,
         permission: currentNote.permission as NotePermission,
-        diff: `+ ${requestBody.body}\n- ${currentNote.body}`, // diffの簡易的なモック
+        diff: db.generateConflictDiff(currentNote.body, requestBody.body),
       };
       return HttpResponse.json(response, { status: 409 });
     }
 
+    // 正常な更新処理
     db.updateNote(noteId, {
       channel: requestBody.channel,
       permission: requestBody.permission,
@@ -110,6 +139,29 @@ export const handlers = [
     const response: GetMyHistoryResponse = {
       total: history.length,
       notes: history,
+    };
+    return HttpResponse.json(response);
+  }),
+
+  // GET /channels
+  http.get(`${API_BASE_URL}/channels`, () => {
+    const response: GetChannelsResponse = db.getChannels();
+    return HttpResponse.json(response);
+  }),
+
+  // GET /me/history
+  http.get(`${API_BASE_URL}/me/history`, ({ request }) => {
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get('limit') || '10');
+    const offset = parseInt(url.searchParams.get('offset') || '0');
+
+    // ユーザーの履歴として、全ノートを時系列順に返す（簡易実装）
+    const allNotes = db.getNotes({});
+    const paginatedNotes = allNotes.slice(offset, offset + limit);
+
+    const response: GetMyHistoryResponse = {
+      total: allNotes.length,
+      notes: paginatedNotes,
     };
     return HttpResponse.json(response);
   }),
